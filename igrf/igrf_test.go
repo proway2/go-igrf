@@ -18,7 +18,7 @@ func TestIGRF(t *testing.T) {
 		want IGRFresults
 	}{
 		{
-			name: "Initial testcase",
+			name: "lat: 59.9, lon: 39.9, alt: 0.0, date: 2019.123",
 			args: args{lat: 59.9, lon: 39.9, alt: 0.0, date: 2019.123},
 			want: IGRFresults{
 				Declination:       14.033,
