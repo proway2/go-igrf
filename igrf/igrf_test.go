@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestIGRF(t *testing.T) {
+func TestIGRFEdgeCases(t *testing.T) {
 	type args struct {
 		lat  float32
 		lon  float32
@@ -19,50 +19,41 @@ func TestIGRF(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "Latitude below -90.0",
+			name:    "Latitude below -90.0°",
 			args:    args{lat: -90.1},
 			want:    IGRFresults{},
 			wantErr: true,
 		},
 		{
-			name:    "Latitude above 90.0",
+			name:    "Latitude above 90.0°",
 			args:    args{lat: 90.1},
 			want:    IGRFresults{},
 			wantErr: true,
 		},
 		{
-			name:    "Longitude below -180.0",
+			name:    "Longitude below -180.0°",
 			args:    args{lon: -180.1},
 			want:    IGRFresults{},
 			wantErr: true,
 		},
 		{
-			name:    "Longitude above 180.0",
+			name:    "Longitude above 180.0°",
 			args:    args{lon: 180.1},
 			want:    IGRFresults{},
 			wantErr: true,
 		},
-		// {
-		// 	name: "lat: 59.9, lon: 39.9, alt: 0.0, date: 2019.123",
-		// 	args: args{lat: 59.9, lon: 39.9, alt: 0.0, date: 2019.123},
-		// 	want: IGRFresults{
-		// 		Declination:       14.033,
-		// 		Inclination:       74.197,
-		// 		HzIntensity:       14641.1,
-		// 		TotalIntensity:    53761.1,
-		// 		NorthComponent:    14204.1,
-		// 		EastComponent:     3550.1,
-		// 		VerticalComponent: 51729.1,
-		// 		DeclinationSV:     9.6,
-		// 		InclinationSV:     2.2,
-		// 		HorizontalSV:      -16.3,
-		// 		TotalSV:           59.8,
-		// 		NorthSV:           -25.8,
-		// 		EastSV:            35.9,
-		// 		VerticalSV:        66.7,
-		// 	},
-		// 	wantErr: false,
-		// },
+		{
+			name:    "Altitude below -1.0 km",
+			args:    args{alt: -1.1},
+			want:    IGRFresults{},
+			wantErr: true,
+		},
+		{
+			name:    "Altitude above 600.0 km",
+			args:    args{alt: 600.1},
+			want:    IGRFresults{},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
