@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -25,16 +26,10 @@ type testsData struct {
 	wantErr bool
 }
 
+const dir_path string = "../testdata"
+
 func TestIGRFDataCases(t *testing.T) {
-	tests := []testsData{
-		{
-			name:    "Latitude below -90.0°",
-			args:    args{lat: -90.1},
-			want:    IGRFresults{},
-			wantErr: true,
-		},
-	}
-	// tests = getTestData()
+	tests := getTestData()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := IGRF(tt.args.lat, tt.args.lon, tt.args.alt, tt.args.date)
@@ -55,14 +50,30 @@ func check(e error) {
 	}
 }
 
-func getTestData() []testsData {
-	f, err := os.Open("../testdata/sample")
+func discoverTestData() []string {
+	files, err := filepath.Glob(dir_path + "/set*")
 	check(err)
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
+	return files
+}
+
+func getTestData() []testsData {
+	test_data_files := discoverTestData()
+	tests := make([]testsData, 500)
+	for _, file := range test_data_files {
+		f, err := os.Open(file)
+		defer f.Close()
+		check(err)
+		current_file_tests := produceTestsDataFromFile(f)
+		tests = append(tests, current_file_tests...)
+	}
+	return tests
+}
+
+func produceTestsDataFromFile(file_descr *os.File) []testsData {
+	scanner := bufio.NewScanner(file_descr)
 	split_regex := regexp.MustCompile(`\s+`)
 	var lat, lon, alt float32
-	var tests []testsData
+	tests := make([]testsData, 110)
 	for num := 0; scanner.Scan(); num++ {
 		line := scanner.Text()
 		if num == 1 {
@@ -79,7 +90,7 @@ func getTestData() []testsData {
 		igrf_res := getIGRFresults(line_data)
 		// num > 0
 		current_test := testsData{
-			name:    fmt.Sprintf("Lat:%v, Lon:%v, Alt:%v, Date:%v", lat, lon, alt, date),
+			name:    fmt.Sprintf("Lat:%v Lon:%v Alt:%v Date:%v", lat, lon, alt, date),
 			args:    args{lat: lat, lon: lon, alt: alt, date: date},
 			want:    igrf_res,
 			wantErr: false,
@@ -102,7 +113,8 @@ func getDate(line []string) float32 {
 }
 
 func toFloat32(str string) float32 {
-	val, _ := strconv.ParseFloat(str, 32)
+	val, err := strconv.ParseFloat(str, 32)
+	check(err)
 	return float32(val)
 }
 
