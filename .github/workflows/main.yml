@@ -1,4 +1,4 @@
-name: Checking the project
+name: Unittests
 
 on: [push, pull_request]
 
