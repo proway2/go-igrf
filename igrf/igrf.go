@@ -26,7 +26,7 @@ func checkInitialConditions(lat, lon, alt float32) error {
 	if lon < -180.0 || lon > 180.0 {
 		error_msg = fmt.Sprintf("Latitude %v° is out of range (-90.0, 90.0)", lat)
 	}
-	if alt < 1.0 || alt > 600.0 {
+	if alt < -1.0 || alt > 600.0 {
 		error_msg = fmt.Sprintf("Altitude %v km is out of range (-1.0, 600.0)", alt)
 	}
 	if len(error_msg) != 0 {
