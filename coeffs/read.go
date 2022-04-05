@@ -22,7 +22,7 @@ var year_sv_re *regexp.Regexp = regexp.MustCompile(`\d{4}-\d{2}`)
 type IGRFcoeffs struct {
 	names  *[]string
 	epochs *[]float64
-	coeffs *[]lineData
+	lines  *[]lineData
 }
 
 type lineData struct {
@@ -38,7 +38,7 @@ func NewCoeffsData() *IGRFcoeffs {
 	return &igrf
 }
 
-func Coeffs(date float64) (*[]float64, error) {
+func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
 	return &[]float64{}, nil
 }
 
@@ -59,7 +59,7 @@ func (igrf *IGRFcoeffs) readCoeffs() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	igrf.coeffs = coeffs
+	igrf.lines = coeffs
 }
 
 func getEpochs(scanner *bufio.Scanner) (*[]string, *[]float64, error) {
@@ -73,14 +73,14 @@ func getEpochs(scanner *bufio.Scanner) (*[]string, *[]float64, error) {
 		if cs_re.Match([]byte(line)) {
 			scanner.Scan()
 			line2 := scanner.Text()
-			names, epochs := parseHeader1(line, line2)
+			names, epochs := parseHeader(line, line2)
 			return &names, &epochs, nil
 		}
 	}
 	return nil, nil, errors.New("Unable to get epochs.")
 }
 
-func parseHeader1(line1, line2 string) ([]string, []float64) {
+func parseHeader(line1, line2 string) ([]string, []float64) {
 	line1_data := space_re.Split(line1, -1)
 	line2_data := space_re.Split(line2, -1)
 
@@ -105,7 +105,7 @@ func parseHeader1(line1, line2 string) ([]string, []float64) {
 			last_digits := raw_epoch[5:]
 			decades, err := strconv.ParseFloat(last_digits, 32)
 			if err != nil {
-				log.Fatal("Unknown year at SV column.")
+				log.Fatal(err.Error())
 			}
 			epoch := 2000.0 + decades
 			epochs[index] = epoch
@@ -149,7 +149,6 @@ func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 		}
 		if index == len(raw_data)-1 {
 			real_data = data[index-1] + real_data*years_before_sv
-			fmt.Println(real_data)
 		}
 		data[index] = real_data
 	}
