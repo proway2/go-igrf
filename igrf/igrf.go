@@ -19,8 +19,9 @@ func IGRF(lat, lon, alt, date float32) (IGRFresults, error) {
 	}
 	// colat := float64(90.0 - lat)
 	// alt64, colat, sd, cd := gg2geo(float64(alt), float64(colat))
+	shc := coeffs.NewCoeffsData()
+	shc.Coeffs(1950.12)
 	res := IGRFresults{}
-	coeffs.LoadCoeffsFile()
 	return res, nil
 }
 
