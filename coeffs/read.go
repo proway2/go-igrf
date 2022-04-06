@@ -14,7 +14,6 @@ const coeffs_lines = 195
 const years_before_sv = 5
 
 var space_re *regexp.Regexp = regexp.MustCompile(`\s+`)
-var year_re *regexp.Regexp = regexp.MustCompile(`\d{4}`)
 var year_sv_re *regexp.Regexp = regexp.MustCompile(`\d{4}-\d{2}`)
 
 type IGRFcoeffs struct {
