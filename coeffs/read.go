@@ -5,13 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-const file_name string = "../coeffs/igrf13coeffs.txt"
 const coeffs_lines = 195
 const years_before_sv = 5
 
@@ -32,34 +30,33 @@ type lineData struct {
 	coeffs *[]float64
 }
 
-func NewCoeffsData() *IGRFcoeffs {
+func NewCoeffsData() (*IGRFcoeffs, error) {
 	igrf := IGRFcoeffs{}
-	igrf.readCoeffs()
-	return &igrf
+	if err := igrf.readCoeffs(); err != nil {
+		return nil, err
+	}
+	return &igrf, nil
 }
 
 func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
 	return &[]float64{}, nil
 }
 
-func (igrf *IGRFcoeffs) readCoeffs() {
-	f, err := os.Open(file_name)
-	defer f.Close()
-	if err != nil {
-		log.Fatal("IGRF Coeffs file not found.")
-	}
-	scanner := bufio.NewScanner(f)
+func (igrf *IGRFcoeffs) readCoeffs() error {
+	coeffs_reader := strings.NewReader(igrf13coeffs)
+	scanner := bufio.NewScanner(coeffs_reader)
 	names, epochs, err := getEpochs(scanner)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 	igrf.names = names
 	igrf.epochs = epochs
 	coeffs, err := getCoeffs(scanner)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 	igrf.lines = coeffs
+	return nil
 }
 
 func getEpochs(scanner *bufio.Scanner) (*[]string, *[]float64, error) {

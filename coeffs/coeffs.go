@@ -1,4 +1,7 @@
-# 13th Generation International Geomagnetic Reference Field Schmidt semi-normalised spherical harmonic coefficients, degree n=1,13
+package coeffs
+
+// taken from https://www.ngdc.noaa.gov/IAGA/vmod/coeffs/igrf13coeffs.txt
+const igrf13coeffs = `# 13th Generation International Geomagnetic Reference Field Schmidt semi-normalised spherical harmonic coefficients, degree n=1,13
 # in units nanoTesla for IGRF and definitive DGRF main-field models (degree n=1,8 nanoTesla/year for secular variation (SV))
 c/s deg ord IGRF IGRF   IGRF   IGRF   IGRF   IGRF   IGRF   IGRF   IGRF   DGRF   DGRF   DGRF   DGRF   DGRF   DGRF   DGRF   DGRF   DGRF   DGRF   DGRF     DGRF      DGRF      DGRF      DGRF     IGRF      SV
 g/h n m 1900.0 1905.0 1910.0 1915.0 1920.0 1925.0 1930.0 1935.0 1940.0 1945.0 1950.0 1955.0 1960.0 1965.0 1970.0 1975.0 1980.0 1985.0 1990.0 1995.0   2000.0    2005.0    2010.0    2015.0   2020.0 2020-25
@@ -196,4 +199,4 @@ h 13 11      0      0      0      0      0      0      0      0      0      0   
 g 13 12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0.0     -0.10     -0.26     -0.35     -0.5     0.0 
 h 13 12      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0     -0.5     -0.57     -0.53     -0.43     -0.4     0.0 
 g 13 13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0.1     -0.18     -0.26     -0.36     -0.4     0.0 
-h 13 13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0     -0.9     -0.82     -0.79     -0.71     -0.6     0.0 
+h 13 13      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0     -0.9     -0.82     -0.79     -0.71     -0.6     0.0 `
