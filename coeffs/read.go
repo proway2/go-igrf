@@ -11,7 +11,7 @@ import (
 )
 
 const coeffs_lines = 195
-const years_before_sv = 5
+const interval = 5
 
 var space_re *regexp.Regexp = regexp.MustCompile(`\s+`)
 var year_sv_re *regexp.Regexp = regexp.MustCompile(`\d{4}-\d{2}`)
@@ -38,7 +38,33 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 }
 
 func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
-	return &[]float64{}, nil
+	start, end, err := igrf.findColumns(date)
+	if err != nil {
+		return nil, err
+	}
+	num_coeffs := len(*(*igrf.lines)[0].coeffs)
+	coeffs_start := (*igrf.lines)[start].coeffs
+	coeffs_end := (*igrf.lines)[end].coeffs
+	coeffs := make([]float64, num_coeffs)
+	for i := 0; i < num_coeffs; i++ {
+		start_value := (*coeffs_start)[i]
+		end_value := (*coeffs_end)[i]
+		real_value := (start_value + end_value) / 2
+		coeffs[i] = real_value
+	}
+	return &coeffs, nil
+}
+
+func (igrf *IGRFcoeffs) findColumns(date float64) (int, int, error) {
+	max_column := len(*igrf.epochs)
+	min_epoch := (*igrf.epochs)[0]
+	max_epoch := (*igrf.epochs)[max_column-1]
+	if date < min_epoch || date > max_epoch {
+		return -1, -1, errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
+	}
+	col1 := int((date - min_epoch) / interval)
+	col2 := col1 + 1
+	return col1, col2, nil
 }
 
 func (igrf *IGRFcoeffs) readCoeffs() error {
@@ -144,7 +170,7 @@ func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 			return nil, errors.New("Unable to parse coeffs.")
 		}
 		if index == len(raw_data)-1 {
-			real_data = data[index-1] + real_data*years_before_sv
+			real_data = data[index-1] + real_data*interval
 		}
 		data[index] = real_data
 	}
