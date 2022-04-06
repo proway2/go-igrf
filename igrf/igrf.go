@@ -3,6 +3,7 @@ package igrf
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
 
 	"github.com/proway2/go-igrf/coeffs"
@@ -19,7 +20,10 @@ func IGRF(lat, lon, alt, date float32) (IGRFresults, error) {
 	}
 	// colat := float64(90.0 - lat)
 	// alt64, colat, sd, cd := gg2geo(float64(alt), float64(colat))
-	shc := coeffs.NewCoeffsData()
+	shc, err := coeffs.NewCoeffsData()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	shc.Coeffs(1950.12)
 	res := IGRFresults{}
 	return res, nil
