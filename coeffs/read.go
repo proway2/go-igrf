@@ -68,15 +68,15 @@ func (igrf *IGRFcoeffs) findColumns(date float64) (int, int, error) {
 }
 
 func (igrf *IGRFcoeffs) readCoeffs() error {
-	coeffs_reader := strings.NewReader(igrf13coeffs)
-	scanner := bufio.NewScanner(coeffs_reader)
-	names, epochs, err := getEpochs(scanner)
+	parser_channel := coeffsLineParser()
+
+	names, epochs, err := getEpochs(parser_channel)
 	if err != nil {
 		return err
 	}
 	igrf.names = names
 	igrf.epochs = epochs
-	coeffs, err := getCoeffs(scanner)
+	coeffs, err := getCoeffs(parser_channel)
 	if err != nil {
 		return err
 	}
@@ -84,17 +84,29 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 	return nil
 }
 
-func getEpochs(scanner *bufio.Scanner) (*[]string, *[]float64, error) {
+func coeffsLineParser() <-chan string {
+	ch := make(chan string)
+	coeffs_reader := strings.NewReader(igrf13coeffs)
+	scanner := bufio.NewScanner(coeffs_reader)
+	go func() {
+		defer close(ch)
+		for scanner.Scan() {
+			line := scanner.Text()
+			line = strings.Trim(line, " ")
+			ch <- line
+		}
+	}()
+	return ch
+}
+
+func getEpochs(reader <-chan string) (*[]string, *[]float64, error) {
 	cs_re := regexp.MustCompile(`^c/s.*`)
-	for scanner.Scan() {
-		line := scanner.Text()
-		line = strings.Trim(line, " ")
+	for line := range reader {
 		if line[0] == 35 { // #
 			continue
 		}
 		if cs_re.Match([]byte(line)) {
-			scanner.Scan()
-			line2 := scanner.Text()
+			line2 := <-reader
 			names, epochs := parseHeader(line, line2)
 			return &names, &epochs, nil
 		}
@@ -136,12 +148,11 @@ func parseHeader(line1, line2 string) ([]string, []float64) {
 	return names, epochs[shift:]
 }
 
-func getCoeffs(scanner *bufio.Scanner) (*[]lineData, error) {
+func getCoeffs(reader <-chan string) (*[]lineData, error) {
 	coeffs := make([]lineData, coeffs_lines)
-	for i := 0; scanner.Scan(); i++ {
+	var i int = 0
+	for line := range reader {
 		data := lineData{}
-		line := scanner.Text()
-		line = strings.Trim(line, " ")
 		line_data := space_re.Split(line, -1)
 		if line_data[0] == "g" {
 			data.g_h = true
@@ -158,6 +169,7 @@ func getCoeffs(scanner *bufio.Scanner) (*[]lineData, error) {
 		}
 		data.coeffs = line_coeffs
 		coeffs[i] = data
+		i++
 	}
 	return &coeffs, nil
 }
