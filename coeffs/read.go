@@ -76,11 +76,11 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 	}
 	igrf.names = names
 	igrf.epochs = epochs
-	coeffs, err := getCoeffs(parser_channel)
+	igrf.lines, err = getCoeffs(parser_channel)
 	if err != nil {
 		return err
 	}
-	igrf.lines = coeffs
+	// igrf.lines = coeffs
 	return nil
 }
 
