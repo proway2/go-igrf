@@ -54,7 +54,11 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[coeffs_lines]float64, error) {
 	// coeffs_start := (*igrf.lines)[start].coeffs
 	coeffs_start := (*igrf.coeffs)[start]
 	coeffs_end := (*igrf.coeffs)[end]
-	fmt.Println(coeffs_end)
+	for index, coeff_start := range coeffs_start {
+		coeff_end := coeffs_end[index]
+		value := (coeff_start + coeff_end) / 2.0
+		fmt.Println(value)
+	}
 	// coeffs := make([]float64, num_coeffs)
 	// for i := 0; i < num_coeffs; i++ {
 	// 	start_value := (*coeffs_start)[i]
