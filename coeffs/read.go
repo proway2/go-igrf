@@ -10,16 +10,23 @@ import (
 	"strings"
 )
 
+// number of lines (with data) in the coeffs file
 const coeffs_lines = 195
+
+// an interval between epochs in the coeffs file (1950.0 - 1945.0 = 5)
 const interval = 5
 
-var space_re *regexp.Regexp = regexp.MustCompile(`\s+`)
-var year_sv_re *regexp.Regexp = regexp.MustCompile(`\d{4}-\d{2}`)
+var (
+	space_re   *regexp.Regexp = regexp.MustCompile(`\s+`)
+	year_sv_re *regexp.Regexp = regexp.MustCompile(`\d{4}-\d{2}`)
+)
 
 type IGRFcoeffs struct {
 	names  *[]string
 	epochs *[]float64
+	// is `lines` needed at all?
 	lines  *[]lineData
+	coeffs *map[string]*[coeffs_lines]float64
 }
 
 type lineData struct {
@@ -31,6 +38,7 @@ type lineData struct {
 
 func NewCoeffsData() (*IGRFcoeffs, error) {
 	igrf := IGRFcoeffs{}
+	igrf.coeffs = &map[string]*[coeffs_lines]float64{}
 	if err := igrf.readCoeffs(); err != nil {
 		return nil, err
 	}
@@ -75,10 +83,16 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 	if err != nil {
 		return err
 	}
+	// initializing the map
+	for _, epoch := range *igrf.epochs {
+		(*igrf.coeffs)[epoch2string(epoch)] = &[coeffs_lines]float64{}
+	}
+	// TODO: decide whether this igrf.lines is needed at all
 	igrf.lines, err = getCoeffs(line_provider)
 	if err != nil {
 		return err
 	}
+	igrf.getCoeffsForEpochs(line_provider)
 	return nil
 }
 
@@ -185,4 +199,41 @@ func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 		data[index] = real_data
 	}
 	return &data, nil
+}
+
+func (igrf *IGRFcoeffs) getCoeffsForEpochs(provider <-chan string) (*[]float64, error) {
+	var i int = 0
+	for line := range provider {
+		data := lineData{}
+		line_data := space_re.Split(line, -1)
+		if line_data[0] == "g" {
+			data.g_h = true
+		} else {
+			data.g_h = false
+		}
+		deg, _ := strconv.ParseInt(line_data[1], 10, 0)
+		data.deg_n = int(deg)
+		ord, _ := strconv.ParseInt(line_data[2], 10, 0)
+		data.ord_m = int(ord)
+		line_coeffs, err := parseArrayToFloat(line_data[3:])
+		if err != nil {
+			return nil, errors.New("Unable to parse coeffs.")
+		}
+		data.coeffs = line_coeffs
+		igrf.loadCoeffs(i, line_coeffs)
+		i++
+	}
+	return &[]float64{}, nil
+}
+
+func (igrf *IGRFcoeffs) loadCoeffs(line_num int, line_coeffs *[]float64) {
+	for index, coeff := range *line_coeffs {
+		epoch := (*igrf.epochs)[index]
+		epoch_str := epoch2string(epoch)
+		(*igrf.coeffs)[epoch_str][line_num] = coeff
+	}
+}
+
+func epoch2string(epoch float64) string {
+	return fmt.Sprintf("%.1f", epoch)
 }
