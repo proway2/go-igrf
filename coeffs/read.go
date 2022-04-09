@@ -26,7 +26,7 @@ type IGRFcoeffs struct {
 	epochs *[]float64
 	// is `lines` needed at all?
 	lines  *[]lineData
-	coeffs *map[string]*[coeffs_lines]float64
+	coeffs *map[string]*[]float64
 }
 
 type lineData struct {
@@ -37,8 +37,7 @@ type lineData struct {
 }
 
 func NewCoeffsData() (*IGRFcoeffs, error) {
-	igrf := IGRFcoeffs{}
-	igrf.coeffs = &map[string]*[coeffs_lines]float64{}
+	igrf := IGRFcoeffs{coeffs: &map[string]*[]float64{}}
 	if err := igrf.readCoeffs(); err != nil {
 		return nil, err
 	}
@@ -46,28 +45,19 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 }
 
 func (igrf *IGRFcoeffs) Coeffs(date float64) (*[coeffs_lines]float64, error) {
-	start, end, err := igrf.findEpochs(date)
-	if err != nil {
-		return nil, err
-	}
-	// num_coeffs := len(*(*igrf.lines)[0].coeffs)
-	// coeffs_start := (*igrf.lines)[start].coeffs
-	coeffs_start := (*igrf.coeffs)[start]
-	coeffs_end := (*igrf.coeffs)[end]
-	for index, coeff_start := range coeffs_start {
-		coeff_end := coeffs_end[index]
-		value := (coeff_start + coeff_end) / 2.0
-		fmt.Println(value)
-	}
-	// coeffs := make([]float64, num_coeffs)
-	// for i := 0; i < num_coeffs; i++ {
-	// 	start_value := (*coeffs_start)[i]
-	// 	end_value := (*coeffs_end)[i]
-	// 	real_value := (start_value + end_value) / 2
-	// 	coeffs[i] = real_value
+	// start, end, err := igrf.findEpochs(date)
+	// if err != nil {
+	// 	return nil, err
 	// }
-	// return &coeffs, nil
-	return coeffs_start, nil
+	// coeffs_start := (*igrf.coeffs)[start]
+	// coeffs_end := (*igrf.coeffs)[end]
+	// for index, coeff_start := range coeffs_start {
+	// 	coeff_end := coeffs_end[index]
+	// 	value := (coeff_start + coeff_end) / 2.0
+	// 	fmt.Println(value)
+	// }
+	// return coeffs_start, nil
+	return nil, nil
 }
 
 func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
@@ -107,7 +97,8 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 	}
 	// initializing the map
 	for _, epoch := range *igrf.epochs {
-		(*igrf.coeffs)[epoch2string(epoch)] = &[coeffs_lines]float64{}
+		local_arr := make([]float64, coeffs_lines)
+		(*igrf.coeffs)[epoch2string(epoch)] = &local_arr
 	}
 	// TODO: decide whether this igrf.lines is needed at all
 	// igrf.lines, err = getCoeffs(line_provider)
@@ -252,7 +243,7 @@ func (igrf *IGRFcoeffs) loadCoeffs(line_num int, line_coeffs *[]float64) {
 	for index, coeff := range *line_coeffs {
 		epoch := (*igrf.epochs)[index]
 		epoch_str := epoch2string(epoch)
-		(*igrf.coeffs)[epoch_str][line_num] = coeff
+		(*(*igrf.coeffs)[epoch_str])[line_num] = coeff
 	}
 }
 
