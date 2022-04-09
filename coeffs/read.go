@@ -68,23 +68,21 @@ func (igrf *IGRFcoeffs) findColumns(date float64) (int, int, error) {
 }
 
 func (igrf *IGRFcoeffs) readCoeffs() error {
-	parser_channel := coeffsLineParser()
+	line_provider := coeffsLineProvider()
 
-	names, epochs, err := getEpochs(parser_channel)
+	var err error
+	igrf.names, igrf.epochs, err = getEpochs(line_provider)
 	if err != nil {
 		return err
 	}
-	igrf.names = names
-	igrf.epochs = epochs
-	igrf.lines, err = getCoeffs(parser_channel)
+	igrf.lines, err = getCoeffs(line_provider)
 	if err != nil {
 		return err
 	}
-	// igrf.lines = coeffs
 	return nil
 }
 
-func coeffsLineParser() <-chan string {
+func coeffsLineProvider() <-chan string {
 	ch := make(chan string)
 	coeffs_reader := strings.NewReader(igrf13coeffs)
 	scanner := bufio.NewScanner(coeffs_reader)
