@@ -13,7 +13,7 @@ import (
 // number of lines (with data) in the coeffs file
 const coeffs_lines = 195
 
-// an interval between epochs in the coeffs file (1950.0 - 1945.0 = 5)
+// an interval between epochs in the coeffs file, e.g. (1950.0 - 1945.0 = 5)
 const interval = 5
 
 var (
@@ -45,22 +45,40 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 	return &igrf, nil
 }
 
-func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
-	start, end, err := igrf.findColumns(date)
+func (igrf *IGRFcoeffs) Coeffs(date float64) (*[coeffs_lines]float64, error) {
+	start, end, err := igrf.findEpochs(date)
 	if err != nil {
 		return nil, err
 	}
-	num_coeffs := len(*(*igrf.lines)[0].coeffs)
-	coeffs_start := (*igrf.lines)[start].coeffs
-	coeffs_end := (*igrf.lines)[end].coeffs
-	coeffs := make([]float64, num_coeffs)
-	for i := 0; i < num_coeffs; i++ {
-		start_value := (*coeffs_start)[i]
-		end_value := (*coeffs_end)[i]
-		real_value := (start_value + end_value) / 2
-		coeffs[i] = real_value
+	// num_coeffs := len(*(*igrf.lines)[0].coeffs)
+	// coeffs_start := (*igrf.lines)[start].coeffs
+	coeffs_start := (*igrf.coeffs)[start]
+	coeffs_end := (*igrf.coeffs)[end]
+	fmt.Println(coeffs_end)
+	// coeffs := make([]float64, num_coeffs)
+	// for i := 0; i < num_coeffs; i++ {
+	// 	start_value := (*coeffs_start)[i]
+	// 	end_value := (*coeffs_end)[i]
+	// 	real_value := (start_value + end_value) / 2
+	// 	coeffs[i] = real_value
+	// }
+	// return &coeffs, nil
+	return coeffs_start, nil
+}
+
+func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
+	max_column := len(*igrf.epochs)
+	min_epoch := (*igrf.epochs)[0]
+	max_epoch := (*igrf.epochs)[max_column-1]
+	if date < min_epoch || date >= max_epoch {
+		return "", "", errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
 	}
-	return &coeffs, nil
+	col1 := min_epoch + float64(int(date-min_epoch))
+	col1 = min_epoch + float64(int((date-min_epoch)/interval))*interval
+	start_epoch := epoch2string(col1)
+	col2 := col1 + interval
+	end_epoch := epoch2string(col2)
+	return start_epoch, end_epoch, nil
 }
 
 func (igrf *IGRFcoeffs) findColumns(date float64) (int, int, error) {
@@ -88,10 +106,10 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 		(*igrf.coeffs)[epoch2string(epoch)] = &[coeffs_lines]float64{}
 	}
 	// TODO: decide whether this igrf.lines is needed at all
-	igrf.lines, err = getCoeffs(line_provider)
-	if err != nil {
-		return err
-	}
+	// igrf.lines, err = getCoeffs(line_provider)
+	// if err != nil {
+	// 	return err
+	// }
 	igrf.getCoeffsForEpochs(line_provider)
 	return nil
 }
