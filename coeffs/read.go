@@ -44,20 +44,19 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 	return &igrf, nil
 }
 
-func (igrf *IGRFcoeffs) Coeffs(date float64) (*[coeffs_lines]float64, error) {
-	// start, end, err := igrf.findEpochs(date)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// coeffs_start := (*igrf.coeffs)[start]
-	// coeffs_end := (*igrf.coeffs)[end]
-	// for index, coeff_start := range coeffs_start {
-	// 	coeff_end := coeffs_end[index]
-	// 	value := (coeff_start + coeff_end) / 2.0
-	// 	fmt.Println(value)
-	// }
-	// return coeffs_start, nil
-	return nil, nil
+func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
+	start, end, err := igrf.findEpochs(date)
+	if err != nil {
+		return nil, err
+	}
+	coeffs_start := (*igrf.coeffs)[start]
+	coeffs_end := (*igrf.coeffs)[end]
+	for index, coeff_start := range *coeffs_start {
+		coeff_end := (*coeffs_end)[index]
+		value := (coeff_start + coeff_end) / 2.0
+		fmt.Println(value)
+	}
+	return coeffs_start, nil
 }
 
 func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
