@@ -24,7 +24,11 @@ func IGRF(lat, lon, alt, date float32) (IGRFresults, error) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	shc.Coeffs(1950.12)
+	coeffs, err := shc.Coeffs(1954.12)
+	if err != nil {
+		return IGRFresults{}, err
+	}
+	fmt.Println(*coeffs)
 	res := IGRFresults{}
 	return res, nil
 }

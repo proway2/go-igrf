@@ -49,14 +49,42 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
 	if err != nil {
 		return nil, err
 	}
-	coeffs_start := (*igrf.coeffs)[start]
-	coeffs_end := (*igrf.coeffs)[end]
+	coeffs := igrf.interpolateCoeffs(start, end, date)
+	if err != nil {
+		return nil, err
+	}
+	return coeffs, nil
+}
+
+func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {
+	fraction := findDateFraction(start_epoch, end_epoch, date)
+	coeffs_start := (*igrf.coeffs)[start_epoch]
+	coeffs_end := (*igrf.coeffs)[end_epoch]
+	values := make([]float64, len(*coeffs_start))
 	for index, coeff_start := range *coeffs_start {
 		coeff_end := (*coeffs_end)[index]
-		value := (coeff_start + coeff_end) / 2.0
-		fmt.Println(value)
+		value := ((coeff_end - coeff_start) * fraction) + coeff_start
+		values[index] = value
 	}
-	return coeffs_start, nil
+	return &values
+}
+
+func findDateFraction(start_epoch, end_epoch string, date float64) float64 {
+	start_year, _ := strconv.ParseFloat(start_epoch, 32)
+	end_year, _ := strconv.ParseFloat(end_epoch, 32)
+	loc_interval := int(end_year) - int(start_year)
+	var total_secs, fraction_secs float64
+	for i := 0; i < loc_interval; i++ {
+		year := int(start_year) + i
+		secs_in_year := secsInYear(year)
+		if year == int(date) {
+			fraction_coeff := date - float64(int(date))
+			fraction_secs = total_secs + fraction_coeff*float64(secs_in_year)
+		}
+		total_secs += float64(secs_in_year)
+	}
+	fraction := fraction_secs / total_secs
+	return fraction
 }
 
 func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
