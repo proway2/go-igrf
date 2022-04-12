@@ -3,7 +3,10 @@ package igrf
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math"
+
+	"github.com/proway2/go-igrf/coeffs"
 )
 
 // IGRF computes values for the geomagnetic field and secular variation for a given set of coordinates and date.
@@ -17,6 +20,15 @@ func IGRF(lat, lon, alt, date float32) (IGRFresults, error) {
 	}
 	// colat := float64(90.0 - lat)
 	// alt64, colat, sd, cd := gg2geo(float64(alt), float64(colat))
+	shc, err := coeffs.NewCoeffsData()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	coeffs, err := shc.Coeffs(1954.12)
+	if err != nil {
+		return IGRFresults{}, err
+	}
+	fmt.Println(*coeffs)
 	res := IGRFresults{}
 	return res, nil
 }
