@@ -1,13 +1,11 @@
 package coeffs
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"log"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 // number of lines (with data) in the coeffs file
@@ -69,24 +67,6 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 	return &values
 }
 
-func findDateFraction(start_epoch, end_epoch string, date float64) float64 {
-	start_year, _ := strconv.ParseFloat(start_epoch, 32)
-	end_year, _ := strconv.ParseFloat(end_epoch, 32)
-	loc_interval := int(end_year) - int(start_year)
-	var total_secs, fraction_secs float64
-	for i := 0; i < loc_interval; i++ {
-		year := int(start_year) + i
-		secs_in_year := secsInYear(year)
-		if year == int(date) {
-			fraction_coeff := date - float64(int(date))
-			fraction_secs = total_secs + fraction_coeff*float64(secs_in_year)
-		}
-		total_secs += float64(secs_in_year)
-	}
-	fraction := fraction_secs / total_secs
-	return fraction
-}
-
 func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
 	max_column := len(*igrf.epochs)
 	min_epoch := (*igrf.epochs)[0]
@@ -134,21 +114,6 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 	// }
 	igrf.getCoeffsForEpochs(line_provider)
 	return nil
-}
-
-func coeffsLineProvider() <-chan string {
-	ch := make(chan string)
-	coeffs_reader := strings.NewReader(igrf13coeffs)
-	scanner := bufio.NewScanner(coeffs_reader)
-	go func() {
-		defer close(ch)
-		for scanner.Scan() {
-			line := scanner.Text()
-			line = strings.Trim(line, " ")
-			ch <- line
-		}
-	}()
-	return ch
 }
 
 func getEpochs(reader <-chan string) (*[]string, *[]float64, error) {
@@ -272,8 +237,4 @@ func (igrf *IGRFcoeffs) loadCoeffs(line_num int, line_coeffs *[]float64) {
 		epoch_str := epoch2string(epoch)
 		(*(*igrf.coeffs)[epoch_str])[line_num] = coeff
 	}
-}
-
-func epoch2string(epoch float64) string {
-	return fmt.Sprintf("%.1f", epoch)
 }
