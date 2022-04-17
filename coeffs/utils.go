@@ -4,9 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+var comment_line *regexp.Regexp = regexp.MustCompile(`^\s*#.*`)
 
 func secsInYear(year int) int {
 	var days_per_year int = 365
@@ -45,6 +48,7 @@ func findDateFraction(start_epoch, end_epoch string, date float64) float64 {
 	return fraction
 }
 
+// coeffsLineProvider - reads lines from raw coeffs data, omits comments
 func coeffsLineProvider() <-chan string {
 	ch := make(chan string)
 	coeffs_reader := strings.NewReader(igrf13coeffs)
@@ -53,6 +57,9 @@ func coeffsLineProvider() <-chan string {
 		defer close(ch)
 		for scanner.Scan() {
 			line := scanner.Text()
+			if comment_line.Match([]byte(line)) {
+				continue
+			}
 			line = strings.Trim(line, " ")
 			ch <- line
 		}
@@ -60,6 +67,7 @@ func coeffsLineProvider() <-chan string {
 	return ch
 }
 
+// epoch2string - converts `epoch` of type `float64` into string.
 func epoch2string(epoch float64) string {
 	return fmt.Sprintf("%.1f", epoch)
 }
