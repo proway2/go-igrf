@@ -42,16 +42,27 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 	return &igrf, nil
 }
 
-func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
-	start, end, err := igrf.findEpochs(date)
-	if err != nil {
-		return nil, err
+func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, error) {
+	max_column := len(*igrf.epochs)
+	min_epoch := (*igrf.epochs)[0]
+	max_epoch := (*igrf.epochs)[max_column-1]
+	if date < min_epoch || date > max_epoch {
+		return nil, nil, errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
 	}
-	coeffs := igrf.interpolateCoeffs(start, end, date)
-	if err != nil {
-		return nil, err
+	// calculate coeffs for the requested date
+	start, end := igrf.findEpochs(date)
+	coeffs_start := igrf.interpolateCoeffs(start, end, date)
+	// in order to calculate yaerly SV add 1 year to the date
+	date = date + 1
+	var coeffs_end *[]float64
+	if date < max_epoch {
+		start, end = igrf.findEpochs(date)
+		coeffs_end = igrf.interpolateCoeffs(start, end, date)
+	} else {
+		coeffs_end = &[]float64{}
+		coeffs_end = igrf.extrapolateCoeffs(start, end, date)
 	}
-	return coeffs, nil
+	return coeffs_start, coeffs_end, nil
 }
 
 func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {
@@ -99,24 +110,50 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 	return &values
 }
 
-func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
+func (igrf *IGRFcoeffs) extrapolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {
+	dte1, _ := strconv.ParseFloat(start_epoch, 32)
+	factor := date - dte1
+	coeffs_start := (*igrf.data)[start_epoch].coeffs
+	coeffs_end := (*igrf.data)[end_epoch].coeffs
+	nmax1 := (*igrf.data)[start_epoch].nmax
+	nmax2 := (*igrf.data)[end_epoch].nmax
+	if nmax1 <= nmax2 {
+		return nil // error here?
+	}
+	var k, l int = -100, -100
+	k = nmax2 * (nmax2 + 2)
+	l = nmax1 * (nmax1 + 2)
+	values := make([]float64, len(*coeffs_start))
+	for i := 0; i < coeffs_lines; i++ {
+		coeff_start := (*coeffs_start)[i]
+		coeff_end := (*coeffs_end)[i]
+		var value float64
+		if i >= k && i < l {
+			value = coeff_start
+		} else {
+			sv := (coeff_end - coeff_start) / interval
+			value = coeff_start + factor*sv
+		}
+		values[i] = value
+	}
+	return &values
+}
+
+func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string) {
 	max_column := len(*igrf.epochs)
 	min_epoch := (*igrf.epochs)[0]
 	max_epoch := (*igrf.epochs)[max_column-1]
-	if date < min_epoch {
-		return "", "", errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
-	}
 	var start_epoch, end_epoch string
 	if date >= max_epoch {
 		start_epoch = epoch2string(max_epoch)
 		end_epoch = epoch2string(max_epoch + interval)
-		return start_epoch, end_epoch, nil
+		return start_epoch, end_epoch
 	}
 	col1 := min_epoch + float64(int((date-min_epoch)/interval))*interval
 	start_epoch = epoch2string(col1)
 	col2 := col1 + interval
 	end_epoch = epoch2string(col2)
-	return start_epoch, end_epoch, nil
+	return start_epoch, end_epoch
 }
 
 func (igrf *IGRFcoeffs) readCoeffs() error {
