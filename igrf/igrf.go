@@ -28,7 +28,7 @@ func IGRF(lat, lon, alt, date float32) (IGRFresults, error) {
 	if err != nil {
 		return IGRFresults{}, err
 	}
-	fmt.Println(*coeffs)
+	_ = *coeffs
 	res := IGRFresults{}
 	return res, nil
 }
