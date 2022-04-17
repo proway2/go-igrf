@@ -56,28 +56,59 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
 
 func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {
 	factor := findDateFraction(start_epoch, end_epoch, date)
-	coeffs_start := (*igrf.coeffs)[start_epoch]
-	coeffs_end := (*igrf.coeffs)[end_epoch]
-	// nmax1 := (*igrf.data)[start_epoch].nmax
-	// nmax2 := (*igrf.data)[end_epoch].nmax
-	// if nmax1 == nmax2 {
-	// 	k := nmax1 * (nmax1 + 2)
-	// 	nmax := nmax1
-	// } else {
-	// 	if nmax1 > nmax2 {
-	// 		k := nmax2 * (nmax2 + 2)
-	// 		l := nmax1 * (nmax1 + 2)
-
-	// 	} else {
-	// 		k := nmax1 * (nmax1 + 2)
-	// 		l := nmax2 * (nmax2 + 2)
-	// 	}
-	// }
+	coeffs_start := (*igrf.data)[start_epoch].coeffs
+	coeffs_end := (*igrf.data)[end_epoch].coeffs
 	values := make([]float64, len(*coeffs_start))
-	for index, coeff_start := range *coeffs_start {
-		coeff_end := (*coeffs_end)[index]
-		value := coeff_start + factor*(coeff_end-coeff_start)
-		values[index] = value
+	nmax1 := (*igrf.data)[start_epoch].nmax
+	nmax2 := (*igrf.data)[end_epoch].nmax
+	if nmax1 == nmax2 {
+		// before 2000.0
+		k := nmax1 * (nmax1 + 2)
+		l := -100
+		for i := 0; i < coeffs_lines; i++ {
+			coeff_start := (*coeffs_start)[i]
+			coeff_end := (*coeffs_end)[i]
+			var value float64
+			if i >= k && i < l {
+				// this just does nothing
+			} else {
+				value = coeff_start + factor*(coeff_end-coeff_start)
+			}
+			values[i] = value
+		}
+	} else {
+		if nmax1 > nmax2 {
+			// the last column has degree of 8
+			// now it's anything after 2020.0
+			k := nmax2 * (nmax2 + 2)
+			l := nmax1 * (nmax1 + 2)
+			for i := 0; i < coeffs_lines; i++ {
+				coeff_start := (*coeffs_start)[i]
+				coeff_end := (*coeffs_end)[i]
+				var value float64
+				if i >= k && i < l {
+					value = coeff_start
+				} else {
+					value = coeff_start + factor*(coeff_end-coeff_start)
+				}
+				values[i] = value
+			}
+		} else {
+			// between 1995.0 and 2000.0
+			k := nmax1 * (nmax1 + 2)
+			l := nmax2 * (nmax2 + 2)
+			for i := 0; i < coeffs_lines; i++ {
+				coeff_start := (*coeffs_start)[i]
+				coeff_end := (*coeffs_end)[i]
+				var value float64
+				if i >= k && i < l {
+					value = factor * coeff_end
+				} else {
+					value = coeff_start + factor*(coeff_end-coeff_start)
+				}
+				values[i] = value
+			}
+		}
 	}
 	return &values
 }
