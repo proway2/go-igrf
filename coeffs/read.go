@@ -81,17 +81,17 @@ func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
 	return start_epoch, end_epoch, nil
 }
 
-func (igrf *IGRFcoeffs) findColumns(date float64) (int, int, error) {
-	max_column := len(*igrf.epochs)
-	min_epoch := (*igrf.epochs)[0]
-	max_epoch := (*igrf.epochs)[max_column-1]
-	if date < min_epoch || date > max_epoch {
-		return -1, -1, errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
-	}
-	col1 := int((date - min_epoch) / interval)
-	col2 := col1 + 1
-	return col1, col2, nil
-}
+// func (igrf *IGRFcoeffs) findColumns(date float64) (int, int, error) {
+// 	max_column := len(*igrf.epochs)
+// 	min_epoch := (*igrf.epochs)[0]
+// 	max_epoch := (*igrf.epochs)[max_column-1]
+// 	if date < min_epoch || date > max_epoch {
+// 		return -1, -1, errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
+// 	}
+// 	col1 := int((date - min_epoch) / interval)
+// 	col2 := col1 + 1
+// 	return col1, col2, nil
+// }
 
 func (igrf *IGRFcoeffs) readCoeffs() error {
 	line_provider := coeffsLineProvider()
@@ -162,31 +162,31 @@ func parseHeader(line1, line2 string) ([]string, []float64) {
 	return names, epochs[shift:]
 }
 
-func getCoeffs(reader <-chan string) (*[]lineData, error) {
-	coeffs := make([]lineData, coeffs_lines)
-	var i int = 0
-	for line := range reader {
-		data := lineData{}
-		line_data := space_re.Split(line, -1)
-		if line_data[0] == "g" {
-			data.g_h = true
-		} else {
-			data.g_h = false
-		}
-		deg, _ := strconv.ParseInt(line_data[1], 10, 0)
-		data.deg_n = int(deg)
-		ord, _ := strconv.ParseInt(line_data[2], 10, 0)
-		data.ord_m = int(ord)
-		line_coeffs, err := parseArrayToFloat(line_data[3:])
-		if err != nil {
-			return nil, errors.New("Unable to parse coeffs.")
-		}
-		data.coeffs = line_coeffs
-		coeffs[i] = data
-		i++
-	}
-	return &coeffs, nil
-}
+// func getCoeffs(reader <-chan string) (*[]lineData, error) {
+// 	coeffs := make([]lineData, coeffs_lines)
+// 	var i int = 0
+// 	for line := range reader {
+// 		data := lineData{}
+// 		line_data := space_re.Split(line, -1)
+// 		if line_data[0] == "g" {
+// 			data.g_h = true
+// 		} else {
+// 			data.g_h = false
+// 		}
+// 		deg, _ := strconv.ParseInt(line_data[1], 10, 0)
+// 		data.deg_n = int(deg)
+// 		ord, _ := strconv.ParseInt(line_data[2], 10, 0)
+// 		data.ord_m = int(ord)
+// 		line_coeffs, err := parseArrayToFloat(line_data[3:])
+// 		if err != nil {
+// 			return nil, errors.New("Unable to parse coeffs.")
+// 		}
+// 		data.coeffs = line_coeffs
+// 		coeffs[i] = data
+// 		i++
+// 	}
+// 	return &coeffs, nil
+// }
 
 func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 	data := make([]float64, len(raw_data))
@@ -196,6 +196,7 @@ func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 			return nil, errors.New("Unable to parse coeffs.")
 		}
 		if index == len(raw_data)-1 {
+			// real value calculated for the SV column
 			real_data = data[index-1] + real_data*interval
 		}
 		data[index] = real_data
