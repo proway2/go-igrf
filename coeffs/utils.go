@@ -2,6 +2,7 @@ package coeffs
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -70,4 +71,20 @@ func coeffsLineProvider() <-chan string {
 // epoch2string - converts `epoch` of type `float64` into string.
 func epoch2string(epoch float64) string {
 	return fmt.Sprintf("%.1f", epoch)
+}
+
+func parseArrayToFloat(raw_data []string) (*[]float64, error) {
+	data := make([]float64, len(raw_data))
+	for index, token := range raw_data {
+		real_data, err := strconv.ParseFloat(token, 32)
+		if err != nil {
+			return nil, errors.New("Unable to parse coeffs.")
+		}
+		if index == len(raw_data)-1 {
+			// real value calculated for the SV column
+			real_data = data[index-1] + real_data*interval
+		}
+		data[index] = real_data
+	}
+	return &data, nil
 }
