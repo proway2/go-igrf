@@ -28,9 +28,9 @@ type IGRFcoeffs struct {
 }
 
 type lineData struct {
-	g_h    bool // the model contains either "g" or "h" g_h == true if there is "g" (false if "h")
-	deg_n  int
-	ord_m  int
+	g_h    bool // Gauss coefficients the model contains either "g" or "h" g_h == true if there is "g" (false if "h")
+	deg_n  int  // spherical harmonic degree
+	ord_m  int  // order
 	coeffs *[]float64
 }
 
@@ -118,14 +118,12 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 func getEpochs(reader <-chan string) (*[]string, *[]float64, error) {
 	cs_re := regexp.MustCompile(`^c/s.*`)
 	for line := range reader {
-		if line[0] == 35 { // #
+		if !cs_re.Match([]byte(line)) {
 			continue
 		}
-		if cs_re.Match([]byte(line)) {
-			line2 := <-reader
-			names, epochs := parseHeader(line, line2)
-			return &names, &epochs, nil
-		}
+		line2 := <-reader
+		names, epochs := parseHeader(line, line2)
+		return &names, &epochs, nil
 	}
 	return nil, nil, errors.New("Unable to get epochs.")
 }
