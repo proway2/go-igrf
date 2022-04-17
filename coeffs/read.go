@@ -61,54 +61,40 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 	values := make([]float64, len(*coeffs_start))
 	nmax1 := (*igrf.data)[start_epoch].nmax
 	nmax2 := (*igrf.data)[end_epoch].nmax
+	var k, l int = -100, -100
+	var interp func(float64, float64, float64) float64
 	if nmax1 == nmax2 {
 		// before 2000.0
-		k := nmax1 * (nmax1 + 2)
-		l := -100
-		for i := 0; i < coeffs_lines; i++ {
-			coeff_start := (*coeffs_start)[i]
-			coeff_end := (*coeffs_end)[i]
-			var value float64
-			if i >= k && i < l {
-				// this just does nothing
-			} else {
-				value = coeff_start + factor*(coeff_end-coeff_start)
-			}
-			values[i] = value
-		}
+		k = nmax1 * (nmax1 + 2)
+		l = -100
 	} else {
 		if nmax1 > nmax2 {
 			// the last column has degree of 8
 			// now it's anything after 2020.0
-			k := nmax2 * (nmax2 + 2)
-			l := nmax1 * (nmax1 + 2)
-			for i := 0; i < coeffs_lines; i++ {
-				coeff_start := (*coeffs_start)[i]
-				coeff_end := (*coeffs_end)[i]
-				var value float64
-				if i >= k && i < l {
-					value = coeff_start
-				} else {
-					value = coeff_start + factor*(coeff_end-coeff_start)
-				}
-				values[i] = value
+			k = nmax2 * (nmax2 + 2)
+			l = nmax1 * (nmax1 + 2)
+			interp = func(start, end, f float64) float64 {
+				return start
 			}
 		} else {
 			// between 1995.0 and 2000.0
-			k := nmax1 * (nmax1 + 2)
-			l := nmax2 * (nmax2 + 2)
-			for i := 0; i < coeffs_lines; i++ {
-				coeff_start := (*coeffs_start)[i]
-				coeff_end := (*coeffs_end)[i]
-				var value float64
-				if i >= k && i < l {
-					value = factor * coeff_end
-				} else {
-					value = coeff_start + factor*(coeff_end-coeff_start)
-				}
-				values[i] = value
+			k = nmax1 * (nmax1 + 2)
+			l = nmax2 * (nmax2 + 2)
+			interp = func(start, end, f float64) float64 {
+				return f * end
 			}
 		}
+	}
+	for i := 0; i < coeffs_lines; i++ {
+		coeff_start := (*coeffs_start)[i]
+		coeff_end := (*coeffs_end)[i]
+		var value float64
+		if i >= k && i < l {
+			value = interp(coeff_start, coeff_end, factor)
+		} else {
+			value = coeff_start + factor*(coeff_end-coeff_start)
+		}
+		values[i] = value
 	}
 	return &values
 }
