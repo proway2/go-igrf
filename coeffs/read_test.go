@@ -6,7 +6,6 @@ func TestIGRFcoeffs_findEpochs(t *testing.T) {
 	type fields struct {
 		names  *[]string
 		epochs *[]float64
-		lines  *[]lineData
 		coeffs *map[string]*[]float64
 	}
 	type args struct {
@@ -99,7 +98,6 @@ func TestIGRFcoeffs_findEpochs(t *testing.T) {
 			igrf := &IGRFcoeffs{
 				names:  tt.fields.names,
 				epochs: tt.fields.epochs,
-				lines:  tt.fields.lines,
 				coeffs: tt.fields.coeffs,
 			}
 			got, got1, err := igrf.findEpochs(tt.args.date)
