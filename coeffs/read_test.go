@@ -35,9 +35,9 @@ func TestIGRFcoeffs_findEpochs(t *testing.T) {
 			name:    "Above maximum",
 			fields:  fields{epochs: epochs},
 			args:    args{date: 2026.0},
-			want:    "",
-			want1:   "",
-			wantErr: true,
+			want:    "2025.0",
+			want1:   "2030.0",
+			wantErr: false,
 		},
 		{
 			name:    "Exact match",

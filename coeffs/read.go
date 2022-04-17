@@ -103,13 +103,19 @@ func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
 	max_column := len(*igrf.epochs)
 	min_epoch := (*igrf.epochs)[0]
 	max_epoch := (*igrf.epochs)[max_column-1]
-	if date < min_epoch || date >= max_epoch {
+	if date < min_epoch {
 		return "", "", errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
 	}
+	var start_epoch, end_epoch string
+	if date >= max_epoch {
+		start_epoch = epoch2string(max_epoch)
+		end_epoch = epoch2string(max_epoch + interval)
+		return start_epoch, end_epoch, nil
+	}
 	col1 := min_epoch + float64(int((date-min_epoch)/interval))*interval
-	start_epoch := epoch2string(col1)
+	start_epoch = epoch2string(col1)
 	col2 := col1 + interval
-	end_epoch := epoch2string(col2)
+	end_epoch = epoch2string(col2)
 	return start_epoch, end_epoch, nil
 }
 
