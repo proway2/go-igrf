@@ -8,8 +8,11 @@ import (
 	"strconv"
 )
 
+// max possible spherical harmonic degree
+const N_MAX = 13
+
 // number of lines (with data) in the coeffs file
-const coeffs_lines = 195
+const coeffs_lines = N_MAX * (N_MAX + 2)
 
 // an interval between epochs in the coeffs file, e.g. (1950.0 - 1945.0 = 5)
 const interval = 5
@@ -22,20 +25,17 @@ var (
 type IGRFcoeffs struct {
 	names  *[]string
 	epochs *[]float64
-	// is `lines` needed at all?
-	lines  *[]lineData
 	coeffs *map[string]*[]float64
+	data   *map[string]*epochData
 }
 
-type lineData struct {
-	g_h    bool // Gauss coefficients the model contains either "g" or "h" g_h == true if there is "g" (false if "h")
-	deg_n  int  // spherical harmonic degree
-	ord_m  int  // order
+type epochData struct {
+	nmax   int
 	coeffs *[]float64
 }
 
 func NewCoeffsData() (*IGRFcoeffs, error) {
-	igrf := IGRFcoeffs{coeffs: &map[string]*[]float64{}}
+	igrf := IGRFcoeffs{coeffs: &map[string]*[]float64{}, data: &map[string]*epochData{}}
 	if err := igrf.readCoeffs(); err != nil {
 		return nil, err
 	}
@@ -55,13 +55,28 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, error) {
 }
 
 func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {
-	fraction := findDateFraction(start_epoch, end_epoch, date)
+	factor := findDateFraction(start_epoch, end_epoch, date)
 	coeffs_start := (*igrf.coeffs)[start_epoch]
 	coeffs_end := (*igrf.coeffs)[end_epoch]
+	// nmax1 := (*igrf.data)[start_epoch].nmax
+	// nmax2 := (*igrf.data)[end_epoch].nmax
+	// if nmax1 == nmax2 {
+	// 	k := nmax1 * (nmax1 + 2)
+	// 	nmax := nmax1
+	// } else {
+	// 	if nmax1 > nmax2 {
+	// 		k := nmax2 * (nmax2 + 2)
+	// 		l := nmax1 * (nmax1 + 2)
+
+	// 	} else {
+	// 		k := nmax1 * (nmax1 + 2)
+	// 		l := nmax2 * (nmax2 + 2)
+	// 	}
+	// }
 	values := make([]float64, len(*coeffs_start))
 	for index, coeff_start := range *coeffs_start {
 		coeff_end := (*coeffs_end)[index]
-		value := ((coeff_end - coeff_start) * fraction) + coeff_start
+		value := coeff_start + factor*(coeff_end-coeff_start)
 		values[index] = value
 	}
 	return &values
@@ -81,18 +96,6 @@ func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string, error) {
 	return start_epoch, end_epoch, nil
 }
 
-// func (igrf *IGRFcoeffs) findColumns(date float64) (int, int, error) {
-// 	max_column := len(*igrf.epochs)
-// 	min_epoch := (*igrf.epochs)[0]
-// 	max_epoch := (*igrf.epochs)[max_column-1]
-// 	if date < min_epoch || date > max_epoch {
-// 		return -1, -1, errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
-// 	}
-// 	col1 := int((date - min_epoch) / interval)
-// 	col2 := col1 + 1
-// 	return col1, col2, nil
-// }
-
 func (igrf *IGRFcoeffs) readCoeffs() error {
 	line_provider := coeffsLineProvider()
 
@@ -106,12 +109,18 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 		local_arr := make([]float64, coeffs_lines)
 		(*igrf.coeffs)[epoch2string(epoch)] = &local_arr
 	}
-	// TODO: decide whether this igrf.lines is needed at all
-	// igrf.lines, err = getCoeffs(line_provider)
-	// if err != nil {
-	// 	return err
-	// }
+	for _, epoch := range *igrf.epochs {
+		local_arr := make([]float64, coeffs_lines)
+		(*igrf.data)[epoch2string(epoch)] = &epochData{coeffs: &local_arr}
+	}
 	igrf.getCoeffsForEpochs(line_provider)
+	for epoch := range *igrf.data {
+		nmax, err := nMaxForEpoch(epoch)
+		if err != nil {
+			return err
+		}
+		(*igrf.data)[epoch].nmax = nmax
+	}
 	return nil
 }
 
@@ -162,67 +171,25 @@ func parseHeader(line1, line2 string) ([]string, []float64) {
 	return names, epochs[shift:]
 }
 
-// func getCoeffs(reader <-chan string) (*[]lineData, error) {
-// 	coeffs := make([]lineData, coeffs_lines)
-// 	var i int = 0
-// 	for line := range reader {
-// 		data := lineData{}
-// 		line_data := space_re.Split(line, -1)
-// 		if line_data[0] == "g" {
-// 			data.g_h = true
-// 		} else {
-// 			data.g_h = false
-// 		}
-// 		deg, _ := strconv.ParseInt(line_data[1], 10, 0)
-// 		data.deg_n = int(deg)
-// 		ord, _ := strconv.ParseInt(line_data[2], 10, 0)
-// 		data.ord_m = int(ord)
-// 		line_coeffs, err := parseArrayToFloat(line_data[3:])
-// 		if err != nil {
-// 			return nil, errors.New("Unable to parse coeffs.")
-// 		}
-// 		data.coeffs = line_coeffs
-// 		coeffs[i] = data
-// 		i++
-// 	}
-// 	return &coeffs, nil
-// }
-
-func parseArrayToFloat(raw_data []string) (*[]float64, error) {
-	data := make([]float64, len(raw_data))
-	for index, token := range raw_data {
-		real_data, err := strconv.ParseFloat(token, 32)
-		if err != nil {
-			return nil, errors.New("Unable to parse coeffs.")
-		}
-		if index == len(raw_data)-1 {
-			// real value calculated for the SV column
-			real_data = data[index-1] + real_data*interval
-		}
-		data[index] = real_data
-	}
-	return &data, nil
-}
-
 func (igrf *IGRFcoeffs) getCoeffsForEpochs(provider <-chan string) (*[]float64, error) {
 	var i int = 0
 	for line := range provider {
-		data := lineData{}
+		// data := lineData{}
 		line_data := space_re.Split(line, -1)
-		if line_data[0] == "g" {
-			data.g_h = true
-		} else {
-			data.g_h = false
-		}
-		deg, _ := strconv.ParseInt(line_data[1], 10, 0)
-		data.deg_n = int(deg)
-		ord, _ := strconv.ParseInt(line_data[2], 10, 0)
-		data.ord_m = int(ord)
+		// if line_data[0] == "g" {
+		// 	data.g_h = true
+		// } else {
+		// 	data.g_h = false
+		// }
+		// deg, _ := strconv.ParseInt(line_data[1], 10, 0)
+		// data.deg_n = int(deg)
+		// ord, _ := strconv.ParseInt(line_data[2], 10, 0)
+		// data.ord_m = int(ord)
 		line_coeffs, err := parseArrayToFloat(line_data[3:])
 		if err != nil {
 			return nil, errors.New("Unable to parse coeffs.")
 		}
-		data.coeffs = line_coeffs
+		// data.coeffs = line_coeffs
 		igrf.loadCoeffs(i, line_coeffs)
 		i++
 	}
@@ -234,5 +201,24 @@ func (igrf *IGRFcoeffs) loadCoeffs(line_num int, line_coeffs *[]float64) {
 		epoch := (*igrf.epochs)[index]
 		epoch_str := epoch2string(epoch)
 		(*(*igrf.coeffs)[epoch_str])[line_num] = coeff
+		(*(*igrf.data)[epoch_str].coeffs)[line_num] = coeff
 	}
+}
+
+// nMaxForEpoch - returns spherical harmonic degree for a certain epoch
+func nMaxForEpoch(epoch string) (int, error) {
+	// this is hardcoded
+	var nmax int
+	epoch_f, err := strconv.ParseFloat(epoch, 32)
+	if err != nil {
+		return 0, err
+	}
+	if epoch_f < 2000.0 {
+		nmax = 10
+	} else if epoch_f > 2020.0 {
+		nmax = 8
+	} else {
+		nmax = 13
+	}
+	return nmax, nil
 }
