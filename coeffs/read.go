@@ -58,17 +58,15 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, error) {
 	date = date + 1
 	var coeffs_end *[]float64
 	if date < max_epoch {
-		start, end = igrf.findEpochs(date)
 		coeffs_end = igrf.interpolateCoeffs(start, end, date)
 	} else {
-		coeffs_end = &[]float64{}
 		coeffs_end = igrf.extrapolateCoeffs(start, end, date)
 	}
 	return coeffs_start, coeffs_end, nil
 }
 
 func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {
-	factor := findDateFraction(start_epoch, end_epoch, date)
+	factor := findDateFactor(start_epoch, end_epoch, date)
 	coeffs_start := (*igrf.data)[start_epoch].coeffs
 	coeffs_end := (*igrf.data)[end_epoch].coeffs
 	values := make([]float64, len(*coeffs_start))
