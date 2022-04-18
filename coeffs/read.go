@@ -71,7 +71,7 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 	values := make([]float64, len(*coeffs_start))
 	nmax1 := (*igrf.data)[start_epoch].nmax
 	nmax2 := (*igrf.data)[end_epoch].nmax
-	var k, l int = -100, -100
+	var k, l int
 	var interp func(float64, float64, float64) float64
 	if nmax1 == nmax2 {
 		// before 2000.0
@@ -119,7 +119,7 @@ func (igrf *IGRFcoeffs) extrapolateCoeffs(start_epoch, end_epoch string, date fl
 	if nmax1 <= nmax2 {
 		return nil // error here?
 	}
-	var k, l int = -100, -100
+	var k, l int
 	k = nmax2 * (nmax2 + 2)
 	l = nmax1 * (nmax1 + 2)
 	values := make([]float64, len(*coeffs_start))
@@ -168,7 +168,10 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 		local_arr := make([]float64, coeffs_lines)
 		(*igrf.data)[epoch2string(epoch)] = &epochData{coeffs: &local_arr}
 	}
-	igrf.getCoeffsForEpochs(line_provider)
+	err = igrf.getCoeffsForEpochs(line_provider)
+	if err != nil {
+		return err
+	}
 	for epoch := range *igrf.data {
 		nmax, err := nMaxForEpoch(epoch)
 		if err != nil {
@@ -226,18 +229,18 @@ func parseHeader(line1, line2 string) ([]string, []float64) {
 	return names, epochs[shift:]
 }
 
-func (igrf *IGRFcoeffs) getCoeffsForEpochs(provider <-chan string) (*[]float64, error) {
+func (igrf *IGRFcoeffs) getCoeffsForEpochs(provider <-chan string) error {
 	var i int = 0
 	for line := range provider {
 		line_data := space_re.Split(line, -1)
 		line_coeffs, err := parseArrayToFloat(line_data[3:])
 		if err != nil {
-			return nil, errors.New("Unable to parse coeffs.")
+			return errors.New("Unable to parse coeffs.")
 		}
 		igrf.loadCoeffs(i, line_coeffs)
 		i++
 	}
-	return &[]float64{}, nil
+	return nil
 }
 
 func (igrf *IGRFcoeffs) loadCoeffs(line_num int, line_coeffs *[]float64) {
