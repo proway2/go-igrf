@@ -2,11 +2,15 @@ package coeffs
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+var comment_line *regexp.Regexp = regexp.MustCompile(`^\s*#.*`)
 
 func secsInYear(year int) int {
 	var days_per_year int = 365
@@ -24,16 +28,19 @@ func isLeapYear(year int) bool {
 	return isDivisibleBy400 || (isDivisibleBy4 && !isDivisibleBy100)
 }
 
-func findDateFraction(start_epoch, end_epoch string, date float64) float64 {
-	start_year, _ := strconv.ParseFloat(start_epoch, 32)
-	end_year, _ := strconv.ParseFloat(end_epoch, 32)
-	if end_year <= start_year {
+func findDateFactor(start_epoch, end_epoch string, date float64) float64 {
+	dte1, _ := strconv.ParseFloat(start_epoch, 32)
+	dte2, _ := strconv.ParseFloat(end_epoch, 32)
+	if dte2 <= dte1 {
 		log.Fatalf("End epoch %v is less than start epoch %v", end_epoch, start_epoch)
 	}
-	loc_interval := int(end_year) - int(start_year)
+	if date > dte2 {
+		return (date - dte1) / (dte2 - dte1)
+	}
+	loc_interval := int(dte2) - int(dte1)
 	var total_secs, fraction_secs float64
 	for i := 0; i < loc_interval; i++ {
-		year := int(start_year) + i
+		year := int(dte1) + i
 		secs_in_year := secsInYear(year)
 		if year == int(date) {
 			fraction_coeff := date - float64(int(date))
@@ -41,10 +48,11 @@ func findDateFraction(start_epoch, end_epoch string, date float64) float64 {
 		}
 		total_secs += float64(secs_in_year)
 	}
-	fraction := fraction_secs / total_secs
-	return fraction
+	factor := fraction_secs / total_secs
+	return factor
 }
 
+// coeffsLineProvider - reads lines from raw coeffs data, omits comments
 func coeffsLineProvider() <-chan string {
 	ch := make(chan string)
 	coeffs_reader := strings.NewReader(igrf13coeffs)
@@ -53,6 +61,9 @@ func coeffsLineProvider() <-chan string {
 		defer close(ch)
 		for scanner.Scan() {
 			line := scanner.Text()
+			if comment_line.Match([]byte(line)) {
+				continue
+			}
 			line = strings.Trim(line, " ")
 			ch <- line
 		}
@@ -60,6 +71,23 @@ func coeffsLineProvider() <-chan string {
 	return ch
 }
 
+// epoch2string - converts `epoch` of type `float64` into string.
 func epoch2string(epoch float64) string {
 	return fmt.Sprintf("%.1f", epoch)
+}
+
+func parseArrayToFloat(raw_data []string) (*[]float64, error) {
+	data := make([]float64, len(raw_data))
+	for index, token := range raw_data {
+		real_data, err := strconv.ParseFloat(token, 32)
+		if err != nil {
+			return nil, errors.New("Unable to parse coeffs.")
+		}
+		if index == len(raw_data)-1 {
+			// real value calculated for the SV column
+			real_data = data[index-1] + real_data*interval
+		}
+		data[index] = real_data
+	}
+	return &data, nil
 }

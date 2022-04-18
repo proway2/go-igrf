@@ -2,7 +2,7 @@
 [![golangci-lint](https://github.com/proway2/go-igrf/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/proway2/go-igrf/actions/workflows/golangci-lint.yml)
 
 # go-igrf
-Pure Go IGRF (International Geomagnetic Reference Field).
+Pure Go IGRF (International Geomagnetic Reference Field). This is based on the existing `C` implementation.
 
 ## Inputs
 
@@ -34,4 +34,6 @@ The output is of type `type IGRFresults struct`. Fields are:
 
 ## References
 
-[Alken, P., Thébault, E., Beggan, C.D. et al. International Geomagnetic Reference Field: the thirteenth generation. Earth Planets Space 73, 49 (2021).](https://rdcu.be/cKqZv) https://doi.org/10.1186/s40623-020-01288-x
+- [Alken, P., Thébault, E., Beggan, C.D. et al. International Geomagnetic Reference Field: the thirteenth generation. Earth Planets Space 73, 49 (2021).](https://rdcu.be/cKqZv) https://doi.org/10.1186/s40623-020-01288-x
+
+- Implementation is based on [geomag70.c](https://www.ngdc.noaa.gov/IAGA/vmod/geomag70_linux.tar.gz). [License information](https://www.ngdc.noaa.gov/IAGA/vmod/geomag70_license.html).

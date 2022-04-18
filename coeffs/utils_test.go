@@ -119,10 +119,15 @@ func Test_findDateFraction(t *testing.T) {
 			args: args{start_epoch: "1950.0", end_epoch: "1955.0", date: 1954.99},
 			want: 0.9980010952902538,
 		},
+		{
+			name: "2025.5",
+			args: args{start_epoch: "2020.0", end_epoch: "2025.0", date: 2025.5},
+			want: 1.1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := findDateFraction(tt.args.start_epoch, tt.args.end_epoch, tt.args.date)
+			got := findDateFactor(tt.args.start_epoch, tt.args.end_epoch, tt.args.date)
 			if !almostEqual(got, tt.want, 1e6) {
 				t.Errorf("findDateFraction() = %v, want %v", got, tt.want)
 			}
