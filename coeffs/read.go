@@ -34,6 +34,7 @@ type epochData struct {
 	coeffs *[]float64
 }
 
+// NewCoeffsData - returns an initialized IGRF SHC data.
 func NewCoeffsData() (*IGRFcoeffs, error) {
 	igrf := IGRFcoeffs{coeffs: &map[string]*[]float64{}, data: &map[string]*epochData{}}
 	if err := igrf.readCoeffs(); err != nil {
@@ -42,6 +43,7 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 	return &igrf, nil
 }
 
+// Coeffs - returns two sets of SHC coeffs for the given `date`, as well as for `date` plus one year.
 func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, error) {
 	max_column := len(*igrf.epochs)
 	min_epoch := (*igrf.epochs)[0]
