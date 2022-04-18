@@ -25,7 +25,6 @@ var (
 type IGRFcoeffs struct {
 	names  *[]string
 	epochs *[]float64
-	coeffs *map[string]*[]float64
 	data   *map[string]*epochData
 }
 
@@ -36,7 +35,7 @@ type epochData struct {
 
 // NewCoeffsData - returns an initialized IGRF SHC data.
 func NewCoeffsData() (*IGRFcoeffs, error) {
-	igrf := IGRFcoeffs{coeffs: &map[string]*[]float64{}, data: &map[string]*epochData{}}
+	igrf := IGRFcoeffs{data: &map[string]*epochData{}}
 	if err := igrf.readCoeffs(); err != nil {
 		return nil, err
 	}
@@ -167,10 +166,6 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 	// initializing the map
 	for _, epoch := range *igrf.epochs {
 		local_arr := make([]float64, coeffs_lines)
-		(*igrf.coeffs)[epoch2string(epoch)] = &local_arr
-	}
-	for _, epoch := range *igrf.epochs {
-		local_arr := make([]float64, coeffs_lines)
 		(*igrf.data)[epoch2string(epoch)] = &epochData{coeffs: &local_arr}
 	}
 	igrf.getCoeffsForEpochs(line_provider)
@@ -234,22 +229,11 @@ func parseHeader(line1, line2 string) ([]string, []float64) {
 func (igrf *IGRFcoeffs) getCoeffsForEpochs(provider <-chan string) (*[]float64, error) {
 	var i int = 0
 	for line := range provider {
-		// data := lineData{}
 		line_data := space_re.Split(line, -1)
-		// if line_data[0] == "g" {
-		// 	data.g_h = true
-		// } else {
-		// 	data.g_h = false
-		// }
-		// deg, _ := strconv.ParseInt(line_data[1], 10, 0)
-		// data.deg_n = int(deg)
-		// ord, _ := strconv.ParseInt(line_data[2], 10, 0)
-		// data.ord_m = int(ord)
 		line_coeffs, err := parseArrayToFloat(line_data[3:])
 		if err != nil {
 			return nil, errors.New("Unable to parse coeffs.")
 		}
-		// data.coeffs = line_coeffs
 		igrf.loadCoeffs(i, line_coeffs)
 		i++
 	}
@@ -260,12 +244,11 @@ func (igrf *IGRFcoeffs) loadCoeffs(line_num int, line_coeffs *[]float64) {
 	for index, coeff := range *line_coeffs {
 		epoch := (*igrf.epochs)[index]
 		epoch_str := epoch2string(epoch)
-		(*(*igrf.coeffs)[epoch_str])[line_num] = coeff
 		(*(*igrf.data)[epoch_str].coeffs)[line_num] = coeff
 	}
 }
 
-// nMaxForEpoch - returns spherical harmonic degree for a certain epoch
+// nMaxForEpoch - returns max spherical harmonic degree for a certain epoch
 func nMaxForEpoch(epoch string) (int, error) {
 	// this is hardcoded
 	var nmax int
