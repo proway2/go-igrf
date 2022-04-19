@@ -42,7 +42,7 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 	return &igrf, nil
 }
 
-// Coeffs - returns two sets of SHC coeffs for the given `date`, as well as for `date` plus one year. Also returns the maximum spherical harmonic degree.
+// Coeffs - returns two sets of SHC coeffs for the given `date`, as well as for `date` plus one year. Also returns the maximal spherical harmonic degree.
 func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error) {
 	max_column := len(*igrf.epochs)
 	min_epoch := (*igrf.epochs)[0]
