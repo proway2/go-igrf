@@ -58,13 +58,17 @@ func discoverTestData() []string {
 
 func getTestData() []testsData {
 	test_data_files := discoverTestData()
-	tests := make([]testsData, 500)
+	tests := make([]testsData, 625)
+	var index int
 	for _, file := range test_data_files {
 		f, err := os.Open(file)
 		defer f.Close()
 		check(err)
 		current_file_tests := produceTestsDataFromFile(f)
-		tests = append(tests, current_file_tests...)
+		for _, test := range current_file_tests {
+			tests[index] = test
+			index++
+		}
 	}
 	return tests
 }
@@ -73,8 +77,8 @@ func produceTestsDataFromFile(file_descr *os.File) []testsData {
 	scanner := bufio.NewScanner(file_descr)
 	split_regex := regexp.MustCompile(`\s+`)
 	var lat, lon, alt float64
-	tests := make([]testsData, 110)
-	for num := 0; scanner.Scan(); num++ {
+	tests := make([]testsData, 125)
+	for num, i := 0, 0; scanner.Scan(); num++ {
 		line := scanner.Text()
 		if num == 1 {
 			// this is just a column names
@@ -95,7 +99,8 @@ func produceTestsDataFromFile(file_descr *os.File) []testsData {
 			want:    igrf_res,
 			wantErr: false,
 		}
-		tests = append(tests, current_test)
+		tests[i] = current_test
+		i++
 	}
 	return tests
 }
