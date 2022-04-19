@@ -13,10 +13,10 @@ import (
 )
 
 type args struct {
-	lat  float32
-	lon  float32
-	alt  float32
-	date float32
+	lat  float64
+	lon  float64
+	alt  float64
+	date float64
 }
 
 type testsData struct {
@@ -72,7 +72,7 @@ func getTestData() []testsData {
 func produceTestsDataFromFile(file_descr *os.File) []testsData {
 	scanner := bufio.NewScanner(file_descr)
 	split_regex := regexp.MustCompile(`\s+`)
-	var lat, lon, alt float32
+	var lat, lon, alt float64
 	tests := make([]testsData, 110)
 	for num := 0; scanner.Scan(); num++ {
 		line := scanner.Text()
@@ -100,16 +100,22 @@ func produceTestsDataFromFile(file_descr *os.File) []testsData {
 	return tests
 }
 
-func getArgs(line []string) (float32, float32, float32) {
-	lat := toFloat32(line[1])
-	lon := toFloat32(line[4])
-	alt := toFloat32(line[5])
+func getArgs(line []string) (float64, float64, float64) {
+	lat := toFloat64(line[1])
+	lon := toFloat64(line[4])
+	alt := toFloat64(line[5])
 	return lat, lon, alt
 }
 
-func getDate(line []string) float32 {
-	date := toFloat32(line[0])
+func getDate(line []string) float64 {
+	date := toFloat64(line[0])
 	return date
+}
+
+func toFloat64(str string) float64 {
+	val, err := strconv.ParseFloat(str, 64)
+	check(err)
+	return float64(val)
 }
 
 func toFloat32(str string) float32 {

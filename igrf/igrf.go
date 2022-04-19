@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 
+	"github.com/proway2/go-igrf/calc"
 	"github.com/proway2/go-igrf/coeffs"
 )
 
@@ -14,7 +15,7 @@ import (
 // Valid values -90.0 < lat < 90.0, -180.0 < lon < 180.0.
 // alt - geodetic altitude above mean sea level in km (-1.00 to 600.00).
 // date - decimal date (1900.00 to 2025).
-func IGRF(lat, lon, alt, date float32) (IGRFresults, error) {
+func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 	if err := checkInitialConditions(lat, lon, alt); err != nil {
 		return IGRFresults{}, err
 	}
@@ -30,12 +31,15 @@ func IGRF(lat, lon, alt, date float32) (IGRFresults, error) {
 	}
 	_ = *start_coeffs
 	_ = *end_coeffs
-	_ = nmax
+	x, y, z := calc.Shval3(lat, lon, alt, nmax)
+	_ = x
+	_ = y
+	_ = z
 	res := IGRFresults{}
 	return res, nil
 }
 
-func checkInitialConditions(lat, lon, alt float32) error {
+func checkInitialConditions(lat, lon, alt float64) error {
 	var error_msg string
 	if lat < -90.0 || lat > 90.0 {
 		error_msg = fmt.Sprintf("Latitude %v° is out of range (-90.0, 90.0)", lat)
