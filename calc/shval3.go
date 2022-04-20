@@ -40,7 +40,6 @@ func Shval3(flat, flon, elev float64, nmax int, gha, ghb *[]float64) (float64, f
 	// TODO: Why this start from 1?
 	sl[1] = math.Sin(argument)
 	cl[1] = math.Cos(argument)
-	cd := 1.0
 	l = 0 // in C index starts from 1
 	n = 0
 	m = 1
@@ -54,7 +53,7 @@ func Shval3(flat, flon, elev float64, nmax int, gha, ghb *[]float64) (float64, f
 	dd = math.Sqrt(argument)
 	argument = elev*(elev+2.0*dd) + (a2*aa+b2*bb)/cc
 	r = math.Sqrt(argument)
-	cd = (elev + dd) / r
+	cd := (elev + dd) / r
 	sd = (a2 - b2) / dd * slat * clat / r
 	aa = slat
 	slat = slat*cd - clat*sd
