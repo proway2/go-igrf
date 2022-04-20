@@ -42,41 +42,43 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 	return &igrf, nil
 }
 
-// Coeffs - returns two sets of SHC coeffs for the given `date`, as well as for `date` plus one year.
-func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, error) {
+// Coeffs - returns two sets of SHC coeffs for the given `date`, as well as for `date` plus one year. Also returns the maximal spherical harmonic degree.
+func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error) {
 	max_column := len(*igrf.epochs)
 	min_epoch := (*igrf.epochs)[0]
 	max_epoch := (*igrf.epochs)[max_column-1]
 	if date < min_epoch || date > max_epoch {
-		return nil, nil, errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
+		return nil, nil, 0, errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
 	}
 	// calculate coeffs for the requested date
 	start, end := igrf.findEpochs(date)
-	coeffs_start := igrf.interpolateCoeffs(start, end, date)
+	var nmax int
+	coeffs_start, nmax := igrf.interpolateCoeffs(start, end, date)
 	// in order to calculate yaerly SV add 1 year to the date
 	date = date + 1
 	var coeffs_end *[]float64
 	if date < max_epoch {
-		coeffs_end = igrf.interpolateCoeffs(start, end, date)
+		coeffs_end, nmax = igrf.interpolateCoeffs(start, end, date)
 	} else {
 		coeffs_end = igrf.extrapolateCoeffs(start, end, date)
 	}
-	return coeffs_start, coeffs_end, nil
+	return coeffs_start, coeffs_end, nmax, nil
 }
 
-func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {
+func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) (*[]float64, int) {
 	factor := findDateFactor(start_epoch, end_epoch, date)
 	coeffs_start := (*igrf.data)[start_epoch].coeffs
 	coeffs_end := (*igrf.data)[end_epoch].coeffs
 	values := make([]float64, len(*coeffs_start))
 	nmax1 := (*igrf.data)[start_epoch].nmax
 	nmax2 := (*igrf.data)[end_epoch].nmax
-	var k, l int
+	var k, l, nmax int
 	var interp func(float64, float64, float64) float64
 	if nmax1 == nmax2 {
 		// before 2000.0
 		k = nmax1 * (nmax1 + 2)
 		l = -100
+		nmax = nmax1
 	} else {
 		if nmax1 > nmax2 {
 			// the last column has degree of 8
@@ -86,6 +88,7 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 			interp = func(start, end, f float64) float64 {
 				return start
 			}
+			nmax = nmax1
 		} else {
 			// between 1995.0 and 2000.0
 			k = nmax1 * (nmax1 + 2)
@@ -93,6 +96,7 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 			interp = func(start, end, f float64) float64 {
 				return f * end
 			}
+			nmax = nmax2
 		}
 	}
 	for i := 0; i < coeffs_lines; i++ {
@@ -106,7 +110,7 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 		}
 		values[i] = value
 	}
-	return &values
+	return &values, nmax
 }
 
 func (igrf *IGRFcoeffs) extrapolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {

@@ -3,9 +3,9 @@ package igrf
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,10 +13,10 @@ import (
 )
 
 type args struct {
-	lat  float32
-	lon  float32
-	alt  float32
-	date float32
+	lat  float64
+	lon  float64
+	alt  float64
+	date float64
 }
 
 type testsData struct {
@@ -27,6 +27,7 @@ type testsData struct {
 }
 
 const dir_path string = "../testdata"
+const max_allowed_error = 0.2 // %
 
 func TestIGRFDataCases(t *testing.T) {
 	tests := getTestData()
@@ -37,11 +38,37 @@ func TestIGRFDataCases(t *testing.T) {
 				t.Errorf("IGRF() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("IGRF() = %v, want %v", got, tt.want)
+			compare_x := compareFloats(float64(got.NorthComponent), float64(tt.want.NorthComponent), max_allowed_error)
+			if !compare_x {
+				t.Errorf("IGRF() NorthComponent = %v, want %v", got.NorthComponent, tt.want.NorthComponent)
 			}
+			// Fortran results are rounded!!!
+			new_east_got := math.Round(float64(got.EastComponent))
+			new_east_want := math.Round(float64(tt.want.EastComponent))
+			compare_y := compareFloats(new_east_got, new_east_want, max_allowed_error)
+			if !compare_y {
+				t.Errorf("IGRF() EastComponent = %v, want %v", got.EastComponent, tt.want.EastComponent)
+			}
+			compare_z := compareFloats(float64(got.VerticalComponent), float64(tt.want.VerticalComponent), max_allowed_error)
+			if !compare_z {
+				t.Errorf("IGRF() VerticalComponent = %v, want %v", got.VerticalComponent, tt.want.VerticalComponent)
+			}
+			// if !reflect.DeepEqual(got, tt.want) {
+			// 	t.Errorf("IGRF() = %v, want %v", got, tt.want)
+			// }
 		})
 	}
+}
+
+func compareFloats(check, base, allowable_error float64) bool {
+	value1 := math.Abs(check)
+	value2 := math.Abs(base)
+	calc_err := math.Abs(100 * ((value1 - value2) / value2))
+	// allowable error percent
+	if calc_err > allowable_error {
+		return false
+	}
+	return true
 }
 
 func check(e error) {
@@ -58,13 +85,17 @@ func discoverTestData() []string {
 
 func getTestData() []testsData {
 	test_data_files := discoverTestData()
-	tests := make([]testsData, 500)
+	tests := make([]testsData, 625)
+	var index int
 	for _, file := range test_data_files {
 		f, err := os.Open(file)
 		defer f.Close()
 		check(err)
 		current_file_tests := produceTestsDataFromFile(f)
-		tests = append(tests, current_file_tests...)
+		for _, test := range current_file_tests {
+			tests[index] = test
+			index++
+		}
 	}
 	return tests
 }
@@ -72,9 +103,9 @@ func getTestData() []testsData {
 func produceTestsDataFromFile(file_descr *os.File) []testsData {
 	scanner := bufio.NewScanner(file_descr)
 	split_regex := regexp.MustCompile(`\s+`)
-	var lat, lon, alt float32
-	tests := make([]testsData, 110)
-	for num := 0; scanner.Scan(); num++ {
+	var lat, lon, alt float64
+	tests := make([]testsData, 125)
+	for num, i := 0, 0; scanner.Scan(); num++ {
 		line := scanner.Text()
 		if num == 1 {
 			// this is just a column names
@@ -95,21 +126,28 @@ func produceTestsDataFromFile(file_descr *os.File) []testsData {
 			want:    igrf_res,
 			wantErr: false,
 		}
-		tests = append(tests, current_test)
+		tests[i] = current_test
+		i++
 	}
 	return tests
 }
 
-func getArgs(line []string) (float32, float32, float32) {
-	lat := toFloat32(line[1])
-	lon := toFloat32(line[4])
-	alt := toFloat32(line[5])
+func getArgs(line []string) (float64, float64, float64) {
+	lat := toFloat64(line[1])
+	lon := toFloat64(line[4])
+	alt := toFloat64(line[5])
 	return lat, lon, alt
 }
 
-func getDate(line []string) float32 {
-	date := toFloat32(line[0])
+func getDate(line []string) float64 {
+	date := toFloat64(line[0])
 	return date
+}
+
+func toFloat64(str string) float64 {
+	val, err := strconv.ParseFloat(str, 64)
+	check(err)
+	return float64(val)
 }
 
 func toFloat32(str string) float32 {

@@ -7,10 +7,10 @@ import (
 
 func TestIGRFEdgeCases(t *testing.T) {
 	type args struct {
-		lat  float32
-		lon  float32
-		alt  float32
-		date float32
+		lat  float64
+		lon  float64
+		alt  float64
+		date float64
 	}
 	tests := []struct {
 		name    string
@@ -54,6 +54,12 @@ func TestIGRFEdgeCases(t *testing.T) {
 			want:    IGRFresults{},
 			wantErr: true,
 		},
+		// {
+		// 	name:    "Testing",
+		// 	args:    args{lat: -59.9, lon: -39.9, alt: -0.5, date: 1915.5},
+		// 	want:    IGRFresults{},
+		// 	wantErr: false,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
