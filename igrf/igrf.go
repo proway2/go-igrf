@@ -28,12 +28,7 @@ func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 	if err != nil {
 		return IGRFresults{}, err
 	}
-	_ = *start_coeffs
-	_ = *end_coeffs
 	x, y, z, xtemp, ytemp, ztemp := calc.Shval3(lat, lon, alt, nmax, start_coeffs, end_coeffs)
-	_ = x
-	_ = y
-	_ = z
 	_ = xtemp
 	_ = ytemp
 	_ = ztemp
