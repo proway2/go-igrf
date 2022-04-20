@@ -17,8 +17,7 @@ func Shval3(flat, flon, elev float64, nmax int, gha, ghb *[]float64) (float64, f
 	*/
 	var a2 float64 = 40680631.59 /* WGS84 */
 	var b2 float64 = 40408299.98 /* WGS84 */
-	var x, y, z, xtemp, ytemp, ztemp, aa, aa_temp, argument, clat, slat, sd, cd, bb, cc, dd, r, ratio, power, rr, fn, fm float64
-	_, _ = ytemp, aa_temp
+	var x, y, z, xtemp, ytemp, ztemp, aa, aa_temp, argument, clat, slat, sd, bb, cc, dd, r, ratio, power, rr, fn, fm float64
 	var l, n, m, npq int
 	var sl, cl [14]float64
 	var p, q [119]float64
@@ -41,7 +40,7 @@ func Shval3(flat, flon, elev float64, nmax int, gha, ghb *[]float64) (float64, f
 	// TODO: Why this start from 1?
 	sl[1] = math.Sin(argument)
 	cl[1] = math.Cos(argument)
-	cd = 1.0
+	cd := 1.0
 	l = 0 // in C index starts from 1
 	n = 0
 	m = 1
