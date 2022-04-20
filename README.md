@@ -23,11 +23,11 @@ The output is of type `type IGRFresults struct`. Fields are:
 |InclinationSV|(I)|arcmin/yr|-2.59||
 |HzIntensity|Horizontal intensity (H)|nT|14626.6||
 |HorizontalSV|(H)|nT/yr|-16.8||
-|NorthComponent|(X)|nT|14181.2||
+|NorthComponent|(X)|nT|14181.2|Tested|
 |NorthSV|(X)|nT/yr|-28.2||
-|EastComponent|(Y)|nT|3581.8||
+|EastComponent|(Y)|nT|3581.8|Tested|
 |EastSV|(Y)|nT/yr|32.0||
-|VerticalComponent|(Z)|nT|51788.4||
+|VerticalComponent|(Z)|nT|51788.4|downward - Tested|
 |VerticalSV|(Z)|nT/yr|80.1||
 |TotalIntensity|(F)|nT|53814.3||
 |TotalSV|(F)|nT/yr|71.8||
