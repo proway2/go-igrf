@@ -3,9 +3,9 @@ package igrf
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -27,6 +27,7 @@ type testsData struct {
 }
 
 const dir_path string = "../testdata"
+const max_allowed_error = 0.2 // %
 
 func TestIGRFDataCases(t *testing.T) {
 	tests := getTestData()
@@ -37,11 +38,37 @@ func TestIGRFDataCases(t *testing.T) {
 				t.Errorf("IGRF() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("IGRF() = %v, want %v", got, tt.want)
+			compare_x := compareFloats(float64(got.NorthComponent), float64(tt.want.NorthComponent), max_allowed_error)
+			if !compare_x {
+				t.Errorf("IGRF() NorthComponent = %v, want %v", got.NorthComponent, tt.want.NorthComponent)
 			}
+			// Fortran results are rounded!!!
+			new_east_got := math.Round(float64(got.EastComponent))
+			new_east_want := math.Round(float64(tt.want.EastComponent))
+			compare_y := compareFloats(new_east_got, new_east_want, max_allowed_error)
+			if !compare_y {
+				t.Errorf("IGRF() EastComponent = %v, want %v", got.EastComponent, tt.want.EastComponent)
+			}
+			compare_z := compareFloats(float64(got.VerticalComponent), float64(tt.want.VerticalComponent), max_allowed_error)
+			if !compare_z {
+				t.Errorf("IGRF() VerticalComponent = %v, want %v", got.VerticalComponent, tt.want.VerticalComponent)
+			}
+			// if !reflect.DeepEqual(got, tt.want) {
+			// 	t.Errorf("IGRF() = %v, want %v", got, tt.want)
+			// }
 		})
 	}
+}
+
+func compareFloats(check, base, allowable_error float64) bool {
+	value1 := math.Abs(check)
+	value2 := math.Abs(base)
+	calc_err := math.Abs(100 * ((value1 - value2) / value2))
+	// allowable error percent
+	if calc_err > allowable_error {
+		return false
+	}
+	return true
 }
 
 func check(e error) {
