@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 
 	"github.com/proway2/go-igrf/calc"
 	"github.com/proway2/go-igrf/coeffs"
@@ -29,10 +30,80 @@ func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 		return IGRFresults{}, err
 	}
 	x, y, z, xtemp, ytemp, ztemp := calc.Shval3(lat, lon, alt, nmax, start_coeffs, end_coeffs)
-	_ = xtemp
-	_ = ytemp
-	_ = ztemp
-	res := IGRFresults{NorthComponent: float32(x), EastComponent: float32(y), VerticalComponent: float32(z)}
+	d, i, h, f := calc.Dihf(x, y, z)
+
+	dtemp, itemp, htemp, ftemp := calc.Dihf(xtemp, ytemp, ztemp)
+
+	ddot := rad2deg(dtemp - d)
+	if ddot > 180.0 {
+		ddot -= 360.0
+	}
+	if ddot <= -180.0 {
+		ddot += 360.0
+	}
+	ddot *= 60.0
+
+	idot := rad2deg(itemp-i) * 60
+	_ = idot
+	d = rad2deg(d)
+	i = rad2deg(i)
+	hdot := htemp - h
+	xdot := xtemp - x
+	ydot := ytemp - y
+	zdot := ztemp - z
+	fdot := ftemp - f
+	_, _, _, _, _ = hdot, xdot, ydot, zdot, fdot
+
+	// deal with geographic and magnetic poles
+
+	// at magnetic poles
+	if h < 100.0 {
+		d = math.NaN()
+		ddot = math.NaN()
+		/* while rest is ok */
+	}
+	// warn_H := 0
+	warn_H_val := 99999.0
+	warn_H_strong := 0
+	warn_H_strong_val := 99999.0
+	// warn_P := 0
+	if h < 1000.0 {
+		// warn_H = 0
+		warn_H_strong = 1
+		if h < warn_H_strong_val {
+			warn_H_strong_val = h
+		}
+		// } else if h < 5000.0 && !warn_H_strong {
+	} else if h < 5000.0 && warn_H_strong != 0 {
+		// warn_H = 1
+		if h < warn_H_val {
+			warn_H_val = h
+		}
+	}
+
+	// at geographic poles
+	if 90.0-math.Abs(lat) <= 0.001 {
+		x = math.NaN()
+		y = math.NaN()
+		d = math.NaN()
+		xdot = math.NaN()
+		ydot = math.NaN()
+		ddot = math.NaN()
+		// warn_P = 1
+		// warn_H = 0
+		warn_H_strong = 0
+		/* while rest is ok */
+	}
+
+	res := IGRFresults{
+		Declination:         float32(d),
+		Inclination:         float32(i),
+		HorizontalIntensity: float32(h),
+		NorthComponent:      float32(x),
+		EastComponent:       float32(y),
+		VerticalComponent:   float32(z),
+		TotalIntensity:      float32(f),
+	}
 	return res, nil
 }
 
@@ -100,8 +171,8 @@ func checkInitialConditions(lat, lon, alt float64) error {
 // 	return rad
 // }
 
-// // rad2deg - converts `radians` into degrees.
-// func rad2deg(radians float64) float64 {
-// 	deg := radians * 180.0 / math.Pi
-// 	return deg
-// }
+// rad2deg - converts `radians` into degrees.
+func rad2deg(radians float64) float64 {
+	deg := radians * 180.0 / math.Pi
+	return deg
+}

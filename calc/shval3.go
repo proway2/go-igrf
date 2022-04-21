@@ -149,3 +149,45 @@ func Shval3(flat, flon, elev float64, nmax int, gha, ghb *[]float64) (float64, f
 	ztemp = ztemp*cd - aa*sd
 	return x, y, z, xtemp, ytemp, ztemp
 }
+
+// Computes the geomagnetic d, i, h, and f from x, y, and z.
+// D  - declination
+// I  - inclination
+// H  - horizontal intensity
+// F  - total intensity
+func Dihf(x, y, z float64) (float64, float64, float64, float64) {
+	var d, i, h, f float64
+	sn := 0.0001
+	for j := 1; j <= 1; j++ {
+		h2 := x*x + y*y
+		argument := h2
+		// calculate horizontal intensity
+		h = math.Sqrt(argument)
+		argument = h2 + z*z
+		// calculate total intensity
+		f = math.Sqrt(argument)
+		if f < sn {
+			// If d and i cannot be determined
+			d = math.NaN()
+			// set equal to NaN
+			i = math.NaN()
+		} else {
+			argument = z
+			argument2 := h
+			i = math.Atan2(argument, argument2)
+			if h < sn {
+				d = math.NaN()
+			} else {
+				hpx := h + x
+				if hpx < sn {
+					d = math.Pi
+				} else {
+					argument = y
+					argument2 = hpx
+					d = 2.0 * math.Atan2(argument, argument2)
+				}
+			}
+		}
+	}
+	return d, i, h, f
+}

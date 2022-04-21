@@ -38,26 +38,50 @@ func TestIGRFDataCases(t *testing.T) {
 				t.Errorf("IGRF() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			compare_x := compareFloats(float64(got.NorthComponent), float64(tt.want.NorthComponent), max_allowed_error)
-			if !compare_x {
+			// Declination
+			// there are just two digits after the dot in FORTRAN results, so truncating it
+			dn := convertToPrecision(float64(got.Declination), 2)
+			compare := compareFloats(dn, float64(tt.want.Declination), max_allowed_error)
+			if !compare {
+				t.Errorf("IGRF() Declination = %v, want %v", got.Declination, tt.want.Declination)
+			}
+			// Inclination
+			in := convertToPrecision(float64(got.Inclination), 2)
+			compare = compareFloats(in, float64(tt.want.Inclination), max_allowed_error)
+			if !compare {
+				t.Errorf("IGRF() Inclination = %v, want %v", got.Inclination, tt.want.Inclination)
+			}
+			// Horizontal intensity
+			compare = compareFloats(float64(got.HorizontalIntensity), float64(tt.want.HorizontalIntensity), max_allowed_error)
+			if !compare {
+				t.Errorf("IGRF() Horizontal intensity = %v, want %v", got.HorizontalIntensity, tt.want.HorizontalIntensity)
+			}
+			// North component
+			compare = compareFloats(float64(got.NorthComponent), float64(tt.want.NorthComponent), max_allowed_error)
+			if !compare {
 				t.Errorf("IGRF() NorthComponent = %v, want %v", got.NorthComponent, tt.want.NorthComponent)
 			}
-			// Fortran results are rounded!!!
+			// East Component - FORTRAN results are rounded!!!
 			new_east_got := math.Round(float64(got.EastComponent))
 			new_east_want := math.Round(float64(tt.want.EastComponent))
-			compare_y := compareFloats(new_east_got, new_east_want, max_allowed_error)
-			if !compare_y {
+			compare = compareFloats(new_east_got, new_east_want, max_allowed_error)
+			if !compare {
 				t.Errorf("IGRF() EastComponent = %v, want %v", got.EastComponent, tt.want.EastComponent)
 			}
-			compare_z := compareFloats(float64(got.VerticalComponent), float64(tt.want.VerticalComponent), max_allowed_error)
-			if !compare_z {
+			// Vertical component
+			compare = compareFloats(float64(got.VerticalComponent), float64(tt.want.VerticalComponent), max_allowed_error)
+			if !compare {
 				t.Errorf("IGRF() VerticalComponent = %v, want %v", got.VerticalComponent, tt.want.VerticalComponent)
 			}
-			// if !reflect.DeepEqual(got, tt.want) {
-			// 	t.Errorf("IGRF() = %v, want %v", got, tt.want)
-			// }
 		})
 	}
+}
+
+func convertToPrecision(value float64, precision int) float64 {
+	format_verbs := fmt.Sprintf("%%.%vf", precision)
+	vs := fmt.Sprintf(format_verbs, value)
+	vn, _ := strconv.ParseFloat(vs, 64)
+	return vn
 }
 
 func compareFloats(check, base, allowable_error float64) bool {
