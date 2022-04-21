@@ -28,6 +28,11 @@ type testsData struct {
 
 const dir_path string = "../testdata"
 const max_allowed_error = 0.2 // %
+// SV fields are just inregers in FORTRAN, so there might be situations where:
+// calculated value 16.47, reference 17
+// calculated value 2.52, reference 3
+// ...
+const max_sv_error = 50 // %
 
 func TestIGRFDataCases(t *testing.T) {
 	tests := getTestData()
@@ -45,21 +50,41 @@ func TestIGRFDataCases(t *testing.T) {
 			if !compare {
 				t.Errorf("IGRF() Declination = %v, want %v", got.Declination, tt.want.Declination)
 			}
+			// Declination SV
+			compare = compareFloats(math.Round(float64(got.DeclinationSV)), float64(tt.want.DeclinationSV), max_sv_error)
+			if !compare {
+				t.Errorf("IGRF() DeclinationSV = %v, want %v", got.DeclinationSV, tt.want.DeclinationSV)
+			}
 			// Inclination
 			in := convertToPrecision(float64(got.Inclination), 2)
 			compare = compareFloats(in, float64(tt.want.Inclination), max_allowed_error)
 			if !compare {
 				t.Errorf("IGRF() Inclination = %v, want %v", got.Inclination, tt.want.Inclination)
 			}
+			// Inclination SV
+			compare = compareFloats(math.Round(float64(got.InclinationSV)), float64(tt.want.InclinationSV), max_sv_error)
+			if !compare {
+				t.Errorf("IGRF() InclinationSV = %v, want %v", got.InclinationSV, tt.want.InclinationSV)
+			}
 			// Horizontal intensity
 			compare = compareFloats(float64(got.HorizontalIntensity), float64(tt.want.HorizontalIntensity), max_allowed_error)
 			if !compare {
 				t.Errorf("IGRF() Horizontal intensity = %v, want %v", got.HorizontalIntensity, tt.want.HorizontalIntensity)
 			}
+			// Horizontal SV
+			compare = compareFloats(math.Round(float64(got.HorizontalSV)), float64(tt.want.HorizontalSV), max_sv_error)
+			if !compare {
+				t.Errorf("IGRF() HorizontalSV = %v, want %v", got.HorizontalSV, tt.want.HorizontalSV)
+			}
 			// North component
 			compare = compareFloats(float64(got.NorthComponent), float64(tt.want.NorthComponent), max_allowed_error)
 			if !compare {
 				t.Errorf("IGRF() NorthComponent = %v, want %v", got.NorthComponent, tt.want.NorthComponent)
+			}
+			// North SV
+			compare = compareFloats(math.Round(float64(got.NorthSV)), float64(tt.want.NorthSV), max_sv_error)
+			if !compare {
+				t.Errorf("IGRF() NorthSV = %v, want %v", got.NorthSV, tt.want.NorthSV)
 			}
 			// East Component - FORTRAN results are rounded!!!
 			new_east_got := math.Round(float64(got.EastComponent))
@@ -68,10 +93,30 @@ func TestIGRFDataCases(t *testing.T) {
 			if !compare {
 				t.Errorf("IGRF() EastComponent = %v, want %v", got.EastComponent, tt.want.EastComponent)
 			}
+			// EastSV
+			compare = compareFloats(math.Round(float64(got.EastSV)), float64(tt.want.EastSV), max_sv_error)
+			if !compare {
+				t.Errorf("IGRF() EastSV = %v, want %v", got.EastSV, tt.want.EastSV)
+			}
 			// Vertical component
 			compare = compareFloats(float64(got.VerticalComponent), float64(tt.want.VerticalComponent), max_allowed_error)
 			if !compare {
 				t.Errorf("IGRF() VerticalComponent = %v, want %v", got.VerticalComponent, tt.want.VerticalComponent)
+			}
+			// VerticalSV
+			compare = compareFloats(math.Round(float64(got.VerticalSV)), float64(tt.want.VerticalSV), max_sv_error)
+			if !compare {
+				t.Errorf("IGRF() VerticalSV = %v, want %v", got.VerticalSV, tt.want.VerticalSV)
+			}
+			// Total intensity
+			compare = compareFloats(float64(got.TotalIntensity), float64(tt.want.TotalIntensity), max_allowed_error)
+			if !compare {
+				t.Errorf("IGRF() Total = %v, want %v", got.TotalIntensity, tt.want.TotalIntensity)
+			}
+			// TotalSV
+			compare = compareFloats(math.Round(float64(got.TotalSV)), float64(tt.want.TotalSV), max_sv_error)
+			if !compare {
+				t.Errorf("IGRF() TotalSV = %v, want %v", got.TotalSV, tt.want.TotalSV)
 			}
 		})
 	}
@@ -80,8 +125,7 @@ func TestIGRFDataCases(t *testing.T) {
 func convertToPrecision(value float64, precision int) float64 {
 	format_verbs := fmt.Sprintf("%%.%vf", precision)
 	vs := fmt.Sprintf(format_verbs, value)
-	vn, _ := strconv.ParseFloat(vs, 64)
-	return vn
+	return toFloat64(vs)
 }
 
 func compareFloats(check, base, allowable_error float64) bool {

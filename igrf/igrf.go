@@ -97,12 +97,19 @@ func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 
 	res := IGRFresults{
 		Declination:         float32(d),
+		DeclinationSV:       float32(ddot),
 		Inclination:         float32(i),
+		InclinationSV:       float32(idot),
 		HorizontalIntensity: float32(h),
+		HorizontalSV:        float32(hdot),
 		NorthComponent:      float32(x),
+		NorthSV:             float32(xdot),
 		EastComponent:       float32(y),
+		EastSV:              float32(ydot),
 		VerticalComponent:   float32(z),
+		VerticalSV:          float32(zdot),
 		TotalIntensity:      float32(f),
+		TotalSV:             float32(fdot),
 	}
 	return res, nil
 }
