@@ -60,7 +60,7 @@ func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 	}
 	// warn_H := 0
 	warn_H_val := 99999.0
-	warn_H_strong := 0
+	var warn_H_strong int
 	warn_H_strong_val := 99999.0
 	// warn_P := 0
 	if h < 1000.0 {
