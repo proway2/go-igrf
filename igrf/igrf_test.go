@@ -27,6 +27,8 @@ type testsData struct {
 }
 
 const dir_path string = "../testdata"
+
+// const max_allowed_error = 3.47 // %
 const max_allowed_error = 0.2 // %
 // SV fields are just inregers in FORTRAN, so there might be situations where:
 // calculated value 16.47, reference 17
@@ -123,12 +125,18 @@ func TestIGRFDataCases(t *testing.T) {
 }
 
 func convertToPrecision(value float64, precision int) float64 {
+	if math.IsNaN(value) {
+		return value
+	}
 	format_verbs := fmt.Sprintf("%%.%vf", precision)
 	vs := fmt.Sprintf(format_verbs, value)
 	return toFloat64(vs)
 }
 
 func compareFloats(check, base, allowable_error float64) bool {
+	if math.IsNaN(check) && !math.IsNaN(base) {
+		return false
+	}
 	value1 := math.Abs(check)
 	value2 := math.Abs(base)
 	calc_err := math.Abs(100 * ((value1 - value2) / value2))
@@ -153,17 +161,13 @@ func discoverTestData() []string {
 
 func getTestData() []testsData {
 	test_data_files := discoverTestData()
-	tests := make([]testsData, 625)
-	var index int
+	tests := make([]testsData, 0)
 	for _, file := range test_data_files {
 		f, err := os.Open(file)
 		defer f.Close()
 		check(err)
 		current_file_tests := produceTestsDataFromFile(f)
-		for _, test := range current_file_tests {
-			tests[index] = test
-			index++
-		}
+		tests = append(tests, current_file_tests...)
 	}
 	return tests
 }
