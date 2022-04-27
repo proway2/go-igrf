@@ -56,7 +56,7 @@ func TestIGRFEdgeCases(t *testing.T) {
 		},
 		// {
 		// 	name:    "Testing",
-		// 	args:    args{lat: -59.9, lon: -39.9, alt: -0.5, date: 1915.5},
+		// 	args:    args{lat: 59.9, lon: 39.9, alt: -0.5, date: 2015.5},
 		// 	want:    IGRFresults{},
 		// 	wantErr: false,
 		// },
