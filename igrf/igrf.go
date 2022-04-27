@@ -59,23 +59,23 @@ func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 		/* while rest is ok */
 	}
 	// warn_H := 0
-	warn_H_val := 99999.0
-	var warn_H_strong int
-	warn_H_strong_val := 99999.0
-	// warn_P := 0
-	if h < 1000.0 {
-		// warn_H = 0
-		warn_H_strong = 1
-		if h < warn_H_strong_val {
-			warn_H_strong_val = h
-		}
-		// } else if h < 5000.0 && !warn_H_strong {
-	} else if h < 5000.0 && warn_H_strong != 0 {
-		// warn_H = 1
-		if h < warn_H_val {
-			warn_H_val = h
-		}
-	}
+	// warn_H_val := 99999.0
+	// var warn_H_strong int
+	// warn_H_strong_val := 99999.0
+	// // warn_P := 0
+	// if h < 1000.0 {
+	// 	// warn_H = 0
+	// 	warn_H_strong = 1
+	// 	if h < warn_H_strong_val {
+	// 		warn_H_strong_val = h
+	// 	}
+	// 	// } else if h < 5000.0 && !warn_H_strong {
+	// } else if h < 5000.0 && warn_H_strong != 0 {
+	// 	// warn_H = 1
+	// 	if h < warn_H_val {
+	// 		warn_H_val = h
+	// 	}
+	// }
 
 	// at geographic poles
 	if 90.0-math.Abs(lat) <= 0.001 {
@@ -87,7 +87,7 @@ func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 		ddot = math.NaN()
 		// warn_P = 1
 		// warn_H = 0
-		warn_H_strong = 0
+		// warn_H_strong = 0
 		/* while rest is ok */
 	}
 
