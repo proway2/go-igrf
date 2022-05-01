@@ -52,12 +52,12 @@ func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 
 	// deal with geographic and magnetic poles
 
-	// at magnetic poles
-	if h < 100.0 {
-		d = math.NaN()
-		ddot = math.NaN()
-		/* while rest is ok */
-	}
+	// // at magnetic poles
+	// if h < 100.0 {
+	// 	d = math.NaN()
+	// 	ddot = math.NaN()
+	// 	/* while rest is ok */
+	// }
 	// warn_H := 0
 	// warn_H_val := 99999.0
 	// var warn_H_strong int
@@ -77,19 +77,19 @@ func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 	// 	}
 	// }
 
-	// at geographic poles
-	if 90.0-math.Abs(lat) <= 0.001 {
-		x = math.NaN()
-		y = math.NaN()
-		d = math.NaN()
-		xdot = math.NaN()
-		ydot = math.NaN()
-		ddot = math.NaN()
-		// warn_P = 1
-		// warn_H = 0
-		// warn_H_strong = 0
-		/* while rest is ok */
-	}
+	// // at geographic poles
+	// if 90.0-math.Abs(lat) <= 0.001 {
+	// 	x = math.NaN()
+	// 	y = math.NaN()
+	// 	d = math.NaN()
+	// 	xdot = math.NaN()
+	// 	ydot = math.NaN()
+	// 	ddot = math.NaN()
+	// 	// warn_P = 1
+	// 	// warn_H = 0
+	// 	// warn_H_strong = 0
+	// 	/* while rest is ok */
+	// }
 
 	res := IGRFresults{
 		Declination:         float32(d),
