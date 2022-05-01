@@ -32,6 +32,21 @@ The output is of type `type IGRFresults struct`. Fields are:
 |TotalIntensity|(F)|nT|53814.3||
 |TotalSV|(F)|nT/yr|71.8||
 
+### Annual changes (SV values)
+
+The SV values are computed by subtracting the values for the desired input date from corresponding values one year later.
+
+### Values near geographic poles
+
+Unlike in `C` implementation, this software calculates values near geographic poles, e.g. for latitudes higher than 89.999 and -89.999. This is the same approach the reference `FORTRAN` implementaion does have. Be adviced that near pole values are much less accurate.
+
+## Overall accuracy
+
+There are almost 900 unittests and results are compared against those generated from FORTRAN.
+- Max allowed absolute error: 0.005
+- Max allowed relative error: 0.2 %
+Since FORTRAN rounds almost all values, except `D` and `I`, actual results are of much higher accuracy.
+
 ## References
 
 - [Alken, P., Thébault, E., Beggan, C.D. et al. International Geomagnetic Reference Field: the thirteenth generation. Earth Planets Space 73, 49 (2021).](https://rdcu.be/cKqZv) https://doi.org/10.1186/s40623-020-01288-x
