@@ -45,7 +45,28 @@ Unlike in `C` implementation, this software calculates values near geographic po
 There are almost 900 unittests and results are compared against those generated from FORTRAN.
 - Max allowed absolute error: 0.005
 - Max allowed relative error: 0.2 %
+
 Since FORTRAN rounds almost all values, except `D` and `I`, actual results are of much higher accuracy.
+
+## Hot to use
+
+- Add `"github.com/proway2/go-igrf/igrf"` to your import clause.
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/proway2/go-igrf/igrf"
+)
+
+func main() {
+	res, _ := igrf.IGRF(46.9, 39.9, 0.0, 2021.5)
+	fmt.Println(res)
+}
+```
+
+- Run `go mod tidy`, this brings the latest version. Fix the version if you need a different one.
 
 ## References
 

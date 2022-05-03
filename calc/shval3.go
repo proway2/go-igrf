@@ -2,7 +2,7 @@ package calc
 
 import "math"
 
-//  Calculates field components from spherical harmonic (sh) models.
+// Calculates field components from spherical harmonic (sh) models.
 // x - northward component
 // y - eastward component
 // z - vertically-downward component
