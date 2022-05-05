@@ -48,7 +48,7 @@ There are almost 900 unittests and results are compared against those generated 
 
 Since FORTRAN rounds almost all values, except `D` and `I`, actual results are of much higher accuracy.
 
-## Hot to use
+## How to use
 
 - Add `"github.com/proway2/go-igrf/igrf"` to your import clause.
 
