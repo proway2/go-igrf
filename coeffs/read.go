@@ -48,7 +48,7 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error
 	min_epoch := (*igrf.epochs)[0]
 	max_epoch := (*igrf.epochs)[max_column-1]
 	if date < min_epoch || date > max_epoch {
-		return nil, nil, 0, errors.New(fmt.Sprintf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch))
+		return nil, nil, 0, fmt.Errorf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch)
 	}
 	// calculate coeffs for the requested date
 	start, end := igrf.findEpochs(date)
@@ -66,7 +66,10 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error
 }
 
 func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) (*[]float64, int) {
-	factor := findDateFactor(start_epoch, end_epoch, date)
+	factor, err := findDateFactor(start_epoch, end_epoch, date)
+	if err != nil {
+		log.Fatal("Epochs are incorrect!")
+	}
 	coeffs_start := (*igrf.data)[start_epoch].coeffs
 	coeffs_end := (*igrf.data)[end_epoch].coeffs
 	values := make([]float64, len(*coeffs_start))
