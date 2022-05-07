@@ -231,27 +231,21 @@ func toFloat64(str string) float64 {
 	return float64(val)
 }
 
-func toFloat32(str string) float32 {
-	val, err := strconv.ParseFloat(str, 32)
-	check(err)
-	return float32(val)
-}
-
 func getIGRFresults(line []string) IGRFresults {
 	return IGRFresults{
-		Declination:         toFloat32(line[1]),
-		DeclinationSV:       toFloat32(line[2]),
-		Inclination:         toFloat32(line[3]),
-		InclinationSV:       toFloat32(line[4]),
-		HorizontalIntensity: toFloat32(line[5]),
-		HorizontalSV:        toFloat32(line[6]),
-		NorthComponent:      toFloat32(line[7]),
-		NorthSV:             toFloat32(line[8]),
-		EastComponent:       toFloat32(line[9]),
-		EastSV:              toFloat32(line[10]),
-		VerticalComponent:   toFloat32(line[11]),
-		VerticalSV:          toFloat32(line[12]),
-		TotalIntensity:      toFloat32(line[13]),
-		TotalSV:             toFloat32(line[14]),
+		Declination:         toFloat64(line[1]),
+		DeclinationSV:       toFloat64(line[2]),
+		Inclination:         toFloat64(line[3]),
+		InclinationSV:       toFloat64(line[4]),
+		HorizontalIntensity: toFloat64(line[5]),
+		HorizontalSV:        toFloat64(line[6]),
+		NorthComponent:      toFloat64(line[7]),
+		NorthSV:             toFloat64(line[8]),
+		EastComponent:       toFloat64(line[9]),
+		EastSV:              toFloat64(line[10]),
+		VerticalComponent:   toFloat64(line[11]),
+		VerticalSV:          toFloat64(line[12]),
+		TotalIntensity:      toFloat64(line[13]),
+		TotalSV:             toFloat64(line[14]),
 	}
 }
