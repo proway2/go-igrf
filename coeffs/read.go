@@ -33,7 +33,7 @@ type epochData struct {
 	coeffs *[]float64
 }
 
-// NewCoeffsData - returns an initialized IGRF SHC data.
+// NewCoeffsData - returns an initialized IGRF SHC data structure.
 func NewCoeffsData() (*IGRFcoeffs, error) {
 	igrf := IGRFcoeffs{data: &map[string]*epochData{}}
 	if err := igrf.readCoeffs(); err != nil {
