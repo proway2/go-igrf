@@ -18,18 +18,18 @@ package igrf
 // TotalIntensity (F):  53814.3 nT
 // TotalSV (F):  71.8 nT/yr
 type IGRFresults struct {
-	Declination         float32
-	DeclinationSV       float32
-	Inclination         float32
-	InclinationSV       float32
-	HorizontalIntensity float32
-	HorizontalSV        float32
-	NorthComponent      float32
-	NorthSV             float32
-	EastComponent       float32
-	EastSV              float32
-	VerticalComponent   float32
-	VerticalSV          float32
-	TotalIntensity      float32
-	TotalSV             float32
+	Declination         float64
+	DeclinationSV       float64
+	Inclination         float64
+	InclinationSV       float64
+	HorizontalIntensity float64
+	HorizontalSV        float64
+	NorthComponent      float64
+	NorthSV             float64
+	EastComponent       float64
+	EastSV              float64
+	VerticalComponent   float64
+	VerticalSV          float64
+	TotalIntensity      float64
+	TotalSV             float64
 }
