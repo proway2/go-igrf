@@ -33,7 +33,7 @@ type epochData struct {
 	coeffs *[]float64
 }
 
-// NewCoeffsData - returns an initialized IGRF SHC data structure.
+// Returns an initialized IGRF SHC data structure.
 func NewCoeffsData() (*IGRFcoeffs, error) {
 	igrf := IGRFcoeffs{data: &map[string]*epochData{}}
 	if err := igrf.readCoeffs(); err != nil {
@@ -42,7 +42,8 @@ func NewCoeffsData() (*IGRFcoeffs, error) {
 	return &igrf, nil
 }
 
-// Coeffs - returns two sets of SHC coeffs for the given `date`, as well as for `date` plus one year. Also returns the maximal spherical harmonic degree.
+// Returns two sets of SH coeffs for the given `date`,
+// as well as for `date` plus one year. Also returns the maximal spherical harmonic degree.
 func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error) {
 	max_column := len(*igrf.epochs)
 	min_epoch := (*igrf.epochs)[0]
@@ -65,6 +66,10 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error
 	return coeffs_start, coeffs_end, nmax, nil
 }
 
+// Computes a set of SH coeffs and the maximal spherical harmonic degree
+// for a given `date` and `start_epoch`, `end_epoch`.
+//
+// `date` is less than the maximal possible epoch.
 func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) (*[]float64, int) {
 	factor, err := findDateFactor(start_epoch, end_epoch, date)
 	if err != nil {
@@ -116,6 +121,10 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 	return &values, nmax
 }
 
+// Computes a set of SH coeffs and the maximal spherical harmonic degree
+// for a given `date` and `start_epoch`, `end_epoch`.
+//
+// `date` is beyond than the maximal possible epoch.
 func (igrf *IGRFcoeffs) extrapolateCoeffs(start_epoch, end_epoch string, date float64) *[]float64 {
 	dte1, _ := strconv.ParseFloat(start_epoch, 32)
 	factor := date - dte1
@@ -145,6 +154,8 @@ func (igrf *IGRFcoeffs) extrapolateCoeffs(start_epoch, end_epoch string, date fl
 	return &values
 }
 
+// Calculates start and end epochs for a given date,
+// default `interval` is used for borders and for multiplicity
 func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string) {
 	max_column := len(*igrf.epochs)
 	min_epoch := (*igrf.epochs)[0]
@@ -162,6 +173,7 @@ func (igrf *IGRFcoeffs) findEpochs(date float64) (string, string) {
 	return start_epoch, end_epoch
 }
 
+// The main function that populates the existing `IGRFcoeffs` structure.
 func (igrf *IGRFcoeffs) readCoeffs() error {
 	line_provider := coeffsLineProvider()
 
@@ -189,6 +201,7 @@ func (igrf *IGRFcoeffs) readCoeffs() error {
 	return nil
 }
 
+// Finds lines with epochs, parses these lines and returns arrays of epochs: names and floats.
 func getEpochs(reader <-chan string) (*[]string, *[]float64, error) {
 	cs_re := regexp.MustCompile(`^c/s.*`)
 	for line := range reader {
@@ -202,6 +215,7 @@ func getEpochs(reader <-chan string) (*[]string, *[]float64, error) {
 	return nil, nil, errors.New("Unable to get epochs.")
 }
 
+//
 func parseHeader(line1, line2 string) ([]string, []float64) {
 	line1_data := space_re.Split(line1, -1)
 	line2_data := space_re.Split(line2, -1)
@@ -258,7 +272,7 @@ func (igrf *IGRFcoeffs) loadCoeffs(line_num int, line_coeffs *[]float64) {
 	}
 }
 
-// nMaxForEpoch - returns max spherical harmonic degree for a certain epoch
+// Returns max spherical harmonic degree for a certain epoch.
 func nMaxForEpoch(epoch string) (int, error) {
 	// this is hardcoded
 	var nmax int
