@@ -137,6 +137,12 @@ func Test_findDateFactor(t *testing.T) {
 			want:    -999,
 			wantErr: true,
 		},
+		{
+			name:    "Incorrect end_epoch",
+			args:    args{start_epoch: "2020.0", end_epoch: "end_epoch", date: 2025.5},
+			want:    -999,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

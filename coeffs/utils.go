@@ -41,10 +41,10 @@ func isLeapYear(year int) bool {
 //
 // In case of no correct epochs are provided, error is returned.
 func findDateFactor(start_epoch, end_epoch string, date float64) (float64, error) {
-	parser := Parser{}
-	dte1, err := parser.ParseFloat(start_epoch)
-	dte2, err := parser.ParseFloat(end_epoch)
-	if err != nil {
+	parser := errParser{}
+	dte1 := parser.parseFloat(start_epoch)
+	dte2 := parser.parseFloat(end_epoch)
+	if parser.err != nil {
 		return -999, fmt.Errorf("Epoch(s) cannot be parsed, start:%v, end:%v", start_epoch, end_epoch)
 	}
 	if dte2 <= dte1 {
@@ -108,15 +108,15 @@ func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 	return &data, nil
 }
 
-type Parser struct {
+type errParser struct {
 	err error
 }
 
-func (p *Parser) ParseFloat(v string) (float64, error) {
+func (p *errParser) parseFloat(v string) float64 {
 	if p.err != nil {
-		return 0, p.err
+		return 0
 	}
 	var value float64
 	value, p.err = strconv.ParseFloat(v, 64)
-	return value, p.err
+	return value
 }
