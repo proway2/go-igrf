@@ -145,8 +145,8 @@ func Test_findDateFactor(t *testing.T) {
 				t.Errorf("findDateFactor() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("findDateFactor() = %v, want %v", got, tt.want)
+			if !almostEqual(got, tt.want, 1e8) {
+				t.Errorf("findDateFraction() = %v, want %v", got, tt.want)
 			}
 		})
 	}
