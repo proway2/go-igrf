@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 var comment_line *regexp.Regexp = regexp.MustCompile(`^\s*#.*`)
 
+// Calculates the number of seconds per year, respects leap years.
 func secsInYear(year int) int {
 	var days_per_year int = 365
 	if isLeapYear(year) {
@@ -21,6 +21,7 @@ func secsInYear(year int) int {
 	return days_per_year * secs_per_day
 }
 
+// Returns whether the given year is leap or not.
 func isLeapYear(year int) bool {
 	isDivisibleBy4 := year%4 == 0
 	isDivisibleBy100 := year%100 == 0
@@ -28,14 +29,29 @@ func isLeapYear(year int) bool {
 	return isDivisibleBy400 || (isDivisibleBy4 && !isDivisibleBy100)
 }
 
-func findDateFactor(start_epoch, end_epoch string, date float64) float64 {
-	dte1, _ := strconv.ParseFloat(start_epoch, 32)
-	dte2, _ := strconv.ParseFloat(end_epoch, 32)
+// Finds the factor for a given `date` between two epochs.
+// In the first approximation the factor is calculated like:
+//
+// factor = (date - start_epoch) / (end_epoch - start_epoch)
+//
+// This is the coarse approach and the actual factor is calculated with respect to the leap years,
+// unless `date` is beyond the `end_epoch`. In this case the above formula is used.
+//
+// If `end_epoch` is less or equal to `start_epoch` - 0 is returned, no negative values returned.
+//
+// In case of no correct epochs are provided, error is returned.
+func findDateFactor(start_epoch, end_epoch string, date float64) (float64, error) {
+	parser := errParser{}
+	dte1 := parser.parseFloat(start_epoch)
+	dte2 := parser.parseFloat(end_epoch)
+	if parser.err != nil {
+		return -999, fmt.Errorf("Epoch(s) cannot be parsed, start:%v, end:%v", start_epoch, end_epoch)
+	}
 	if dte2 <= dte1 {
-		log.Fatalf("End epoch %v is less than start epoch %v", end_epoch, start_epoch)
+		return 0, nil
 	}
 	if date > dte2 {
-		return (date - dte1) / (dte2 - dte1)
+		return (date - dte1) / (dte2 - dte1), nil
 	}
 	loc_interval := int(dte2) - int(dte1)
 	var total_secs, fraction_secs float64
@@ -49,7 +65,7 @@ func findDateFactor(start_epoch, end_epoch string, date float64) float64 {
 		total_secs += float64(secs_in_year)
 	}
 	factor := fraction_secs / total_secs
-	return factor
+	return factor, nil
 }
 
 // coeffsLineProvider - reads lines from raw coeffs data, omits comments
@@ -90,4 +106,17 @@ func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 		data[index] = real_data
 	}
 	return &data, nil
+}
+
+type errParser struct {
+	err error
+}
+
+func (p *errParser) parseFloat(v string) float64 {
+	if p.err != nil {
+		return 0
+	}
+	var value float64
+	value, p.err = strconv.ParseFloat(v, 64)
+	return value
 }

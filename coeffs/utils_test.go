@@ -77,58 +77,81 @@ func Test_secsInYear(t *testing.T) {
 	}
 }
 
-func Test_findDateFraction(t *testing.T) {
+func Test_findDateFactor(t *testing.T) {
 	type args struct {
 		start_epoch string
 		end_epoch   string
 		date        float64
 	}
 	tests := []struct {
-		name string
-		args args
-		want float64
+		name    string
+		args    args
+		want    float64
+		wantErr bool
 	}{
 		{
-			name: "Exact match (start epoch)",
-			args: args{start_epoch: "1900.0", end_epoch: "1910.0", date: 1900.0},
-			want: 0.0,
+			name:    "Exact match (start epoch)",
+			args:    args{start_epoch: "1900.0", end_epoch: "1910.0", date: 1900.0},
+			want:    0.0,
+			wantErr: false,
 		},
 		{
-			name: "Exact match (end epoch)",
-			args: args{start_epoch: "1900.0", end_epoch: "1910.0", date: 1910.0},
-			want: 0.0,
-		},
-		// this generates os.Exit(1)
-		// {
-		// 	name: "End epoch is less than start epoch",
-		// 	args: args{start_epoch: "1910.0", end_epoch: "1900.0", date: 1910.0},
-		// 	want: 1.0,
-		// },
-		{
-			name: "Middle",
-			args: args{start_epoch: "1900.0", end_epoch: "1910.0", date: 1905.0},
-			want: 0.5,
+			name:    "Exact match (end epoch)",
+			args:    args{start_epoch: "1900.0", end_epoch: "1910.0", date: 1910.0},
+			want:    0.0,
+			wantErr: false,
 		},
 		{
-			name: "1950.01",
-			args: args{start_epoch: "1950.0", end_epoch: "1955.0", date: 1950.01},
-			want: 0.001998904709746265,
+			name:    "End epoch is less than start epoch",
+			args:    args{start_epoch: "1910.0", end_epoch: "1900.0", date: 1910.0},
+			want:    0.0,
+			wantErr: false,
 		},
 		{
-			name: "1950.99",
-			args: args{start_epoch: "1950.0", end_epoch: "1955.0", date: 1954.99},
-			want: 0.9980010952902538,
+			name:    "Middle",
+			args:    args{start_epoch: "1900.0", end_epoch: "1910.0", date: 1905.0},
+			want:    0.5,
+			wantErr: false,
 		},
 		{
-			name: "2025.5",
-			args: args{start_epoch: "2020.0", end_epoch: "2025.0", date: 2025.5},
-			want: 1.1,
+			name:    "1950.01",
+			args:    args{start_epoch: "1950.0", end_epoch: "1955.0", date: 1950.01},
+			want:    0.001998904709746265,
+			wantErr: false,
+		},
+		{
+			name:    "1950.99",
+			args:    args{start_epoch: "1950.0", end_epoch: "1955.0", date: 1954.99},
+			want:    0.9980010952902538,
+			wantErr: false,
+		},
+		{
+			name:    "2025.5",
+			args:    args{start_epoch: "2020.0", end_epoch: "2025.0", date: 2025.5},
+			want:    1.1,
+			wantErr: false,
+		},
+		{
+			name:    "Incorrect start_epoch",
+			args:    args{start_epoch: "start_epoch", end_epoch: "2025.0", date: 2025.5},
+			want:    -999,
+			wantErr: true,
+		},
+		{
+			name:    "Incorrect end_epoch",
+			args:    args{start_epoch: "2020.0", end_epoch: "end_epoch", date: 2025.5},
+			want:    -999,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := findDateFactor(tt.args.start_epoch, tt.args.end_epoch, tt.args.date)
-			if !almostEqual(got, tt.want, 1e6) {
+			got, err := findDateFactor(tt.args.start_epoch, tt.args.end_epoch, tt.args.date)
+			if (err != nil) && !tt.wantErr {
+				t.Errorf("findDateFactor() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !almostEqual(got, tt.want, 1e8) {
 				t.Errorf("findDateFraction() = %v, want %v", got, tt.want)
 			}
 		})

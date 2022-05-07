@@ -74,6 +74,22 @@ func TestIGRFcoeffs_Coeffs(t *testing.T) {
 			want3:   13,
 			wantErr: false,
 		},
+		{
+			name:    "1024.5: Date below the starting epoch..",
+			args:    args{date: 1024.5},
+			want1:   nil,
+			want2:   nil,
+			want3:   0,
+			wantErr: true,
+		},
+		{
+			name:    "3024.5: Date beyond the ending epoch..",
+			args:    args{date: 3024.5},
+			want1:   nil,
+			want2:   nil,
+			want3:   0,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -84,6 +100,9 @@ func TestIGRFcoeffs_Coeffs(t *testing.T) {
 			}
 			if tt.want3 != got3 {
 				t.Errorf("IGRFcoeffs.Coeffs() nmax got %v, wanted %v", got3, tt.want3)
+				return
+			}
+			if err != nil {
 				return
 			}
 			for index, value1 := range *got1 {
