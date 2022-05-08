@@ -1,5 +1,6 @@
 [![Checking the project](https://github.com/proway2/go-igrf/actions/workflows/main.yml/badge.svg)](https://github.com/proway2/go-igrf/actions/workflows/main.yml)
 [![golangci-lint](https://github.com/proway2/go-igrf/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/proway2/go-igrf/actions/workflows/golangci-lint.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/proway2/go-igrf.svg)](https://pkg.go.dev/github.com/proway2/go-igrf)
 
 # go-igrf
 Pure Go IGRF (International Geomagnetic Reference Field). This is based on the existing `C` implementation.
