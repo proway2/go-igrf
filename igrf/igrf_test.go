@@ -33,6 +33,7 @@ const (
 	max_rel_tol           = 0.005
 	near_pole_max_rel_tol = 0.03
 	max_abs_tol           = 0.2
+	d_i_abs_tol           = 0.05 // D and I are tested with much higher accuracy
 )
 
 const near_pole_tolerance = 0.001
@@ -58,12 +59,12 @@ func TestIGRFDataCases(t *testing.T) {
 			// MAIN VALUES
 
 			// Declination
-			compare := isClose(got.Declination, tt.want.Declination, allowed_relative_error, 0.05)
+			compare := isClose(got.Declination, tt.want.Declination, allowed_relative_error, d_i_abs_tol)
 			if !compare {
 				t.Errorf("IGRF() Declination = %v, want %v", got.Declination, tt.want.Declination)
 			}
 			// Inclination
-			compare = isClose(got.Inclination, tt.want.Inclination, allowed_relative_error, 0.05)
+			compare = isClose(got.Inclination, tt.want.Inclination, allowed_relative_error, d_i_abs_tol)
 			if !compare {
 				t.Errorf("IGRF() Inclination = %v, want %v", got.Inclination, tt.want.Inclination)
 			}
