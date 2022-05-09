@@ -30,15 +30,12 @@ const dir_path string = "../testdata"
 
 // allowed errors
 const (
-	max_rel_tol           = 0.005
-	near_pole_max_rel_tol = 0.03
-	max_abs_tol           = 0.2
-	d_i_abs_tol           = 0.05 // D and I are tested with much higher accuracy
+	max_rel_tol           = 0.005 // max relative tolerance
+	near_pole_max_rel_tol = 0.03  // max relative tolerance is increased for near pole values
+	d_i_abs_tol           = 0.01  // D and I are tested with much higher accuracy
 )
 
 const near_pole_tolerance = 0.001
-const small_value = 100
-const small_value_factor = 3
 
 // SV fields are just integers in FORTRAN, so there might be situations where:
 // calculated value 16.47, reference 17
@@ -152,9 +149,12 @@ func getMaxAllowedRelativeError(lat float64) float64 {
 }
 
 func getMaxAllowedAbsoluteTolerance(value float64) float64 {
-	abs_tol := max_abs_tol
-	if value < small_value {
-		abs_tol *= small_value_factor
+	abs_tol := 0.15
+	// For some values (H, X, Y, Z) that are really small it's hard to calculate the accuracy due to the fact that
+	// results from `FORTRAN` are rounded. That's why for some small values (close to the magnetic pole) absolute and relative accuracies
+	// are increased.
+	if value < 70 {
+		abs_tol *= 4
 		return abs_tol
 	}
 	return abs_tol
