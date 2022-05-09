@@ -2,7 +2,7 @@ package calc
 
 import "math"
 
-// Calculates field components from spherical harmonic (sh) models.
+// Computes field components from spherical harmonic (sh) models.
 // The calculation is performed for two sets of coeffs for a single location,
 // thus it returns two sets of X, Y, Z.
 //
