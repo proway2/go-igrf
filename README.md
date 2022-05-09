@@ -68,7 +68,7 @@ func main() {
 }
 ```
 
-- Run `go mod tidy`, this brings the latest version. Fix the version if you need a different one.
+- Run `go mod tidy`, this brings the latest version. Fix the version at `go.mod` if you need a different one.
 
 ## References
 
