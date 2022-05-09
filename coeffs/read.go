@@ -69,7 +69,7 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error
 // Computes a set of SH coeffs and the maximal spherical harmonic degree
 // for a given `date` and `start_epoch`, `end_epoch`.
 //
-// `date` is less than the maximal possible epoch.
+// `date` must be less than the maximal possible epoch.
 func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date float64) (*[]float64, int) {
 	factor, err := findDateFactor(start_epoch, end_epoch, date)
 	if err != nil {
@@ -215,7 +215,7 @@ func getEpochs(reader <-chan string) (*[]string, *[]float64, error) {
 	return nil, nil, errors.New("Unable to get epochs.")
 }
 
-//
+// Parses the header of the coeffs. Usually it's the first two non-comment lines.
 func parseHeader(line1, line2 string) ([]string, []float64) {
 	line1_data := space_re.Split(line1, -1)
 	line2_data := space_re.Split(line2, -1)
@@ -250,6 +250,7 @@ func parseHeader(line1, line2 string) ([]string, []float64) {
 	return names, epochs[shift:]
 }
 
+// Parses lines with coefficients and populates the `IGRFcoeffs` structure.
 func (igrf *IGRFcoeffs) getCoeffsForEpochs(provider <-chan string) error {
 	var i int = 0
 	for line := range provider {
@@ -264,6 +265,7 @@ func (igrf *IGRFcoeffs) getCoeffsForEpochs(provider <-chan string) error {
 	return nil
 }
 
+// Populates the corresponding fields inside the `IGRFcoeffs` structure with actual coeffs.
 func (igrf *IGRFcoeffs) loadCoeffs(line_num int, line_coeffs *[]float64) {
 	for index, coeff := range *line_coeffs {
 		epoch := (*igrf.epochs)[index]
