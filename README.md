@@ -43,9 +43,11 @@ Unlike in `C` implementation, this software calculates values near geographic po
 
 ## Overall accuracy
 
-There are almost 900 unittests and results are compared against those generated from FORTRAN.
-- Max allowed absolute error: 0.005
-- Max allowed relative error: 0.2 %
+There are far more than 1000+ unittests and results are compared against those generated from FORTRAN. SV values are not covered with tests due to the initial low accuracy of `FORTRAN` values. For most values these tolerances are used (whichever is higher):
+- relative tolerance: 0.005
+- absolute tolerance: 0.15
+- absolute tolerance for declination and inclination: 0.005
+Near pole values are tested with relaxed accuracies.
 
 Since FORTRAN rounds almost all values, except `D` and `I`, actual results are of much higher accuracy.
 
