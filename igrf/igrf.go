@@ -10,10 +10,14 @@ import (
 	"github.com/proway2/go-igrf/coeffs"
 )
 
-// IGRF computes values for the geomagnetic field and secular variation for a given set of coordinates and date.
+// IGRF computes values for the geomagnetic field and secular variation for a given set of coordinates and date
+// and returns a populated `IGRFresults` structure.
+//
 // lat, lon - geodetic latitude and longitude (WGS84 latitude and altitude above mean sea level).
 // Valid values -90.0 < lat < 90.0, -180.0 < lon < 180.0.
+//
 // alt - geodetic altitude above mean sea level in km (-1.00 to 600.00).
+//
 // date - decimal date (1900.00 to 2025).
 func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 	if err := checkInitialConditions(lat, lon, alt); err != nil {
