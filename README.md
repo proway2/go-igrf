@@ -47,9 +47,8 @@ There are far more than 1000+ unittests and results are compared against those g
 - relative tolerance: 0.005
 - absolute tolerance: 0.15
 - absolute tolerance for declination and inclination: 0.005
-Near pole values are tested with relaxed accuracies.
 
-Since FORTRAN rounds almost all values, except `D` and `I`, actual results are of much higher accuracy.
+Near pole values are tested with relaxed accuracies. Since FORTRAN rounds almost all values, except `D` and `I`, actual results are of much higher accuracy.
 
 ## How to use
 
