@@ -43,7 +43,7 @@ Unlike in `C` implementation, this software calculates values near geographic po
 
 ## Overall accuracy
 
-There are almost 900 unittests and results are compared against those generated from FORTRAN.
+There are far more than 1000+ unittests and results are compared against those generated from FORTRAN.
 - Max allowed absolute error: 0.005
 - Max allowed relative error: 0.2 %
 
