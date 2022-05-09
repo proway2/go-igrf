@@ -2,10 +2,15 @@ package calc
 
 import "math"
 
-// Calculates field components from spherical harmonic (sh) models.
-// x - northward component
-// y - eastward component
-// z - vertically-downward component
+// Computes field components from spherical harmonic (sh) models.
+// The calculation is performed for two sets of coeffs for a single location,
+// thus it returns two sets of X, Y, Z.
+//
+// X - northward component
+//
+// Y - eastward component
+//
+// Z - vertically-downward component
 func Shval3(flat, flon, elev float64, nmax int, gha, ghb *[]float64) (float64, float64, float64, float64, float64, float64) {
 	// similar to shval3 from C implementation
 	var earths_radius float64 = 6371.2
@@ -150,10 +155,14 @@ func Shval3(flat, flon, elev float64, nmax int, gha, ghb *[]float64) (float64, f
 	return x, y, z, xtemp, ytemp, ztemp
 }
 
-// Computes the geomagnetic d, i, h, and f from x, y, and z.
+// Computes the geomagnetic D, I, H, and F from X, Y, and Z.
+//
 // D  - declination
+//
 // I  - inclination
+//
 // H  - horizontal intensity
+//
 // F  - total intensity
 func Dihf(x, y, z float64) (float64, float64, float64, float64) {
 	var d, i, h, f float64

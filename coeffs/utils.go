@@ -68,7 +68,7 @@ func findDateFactor(start_epoch, end_epoch string, date float64) (float64, error
 	return factor, nil
 }
 
-// coeffsLineProvider - reads lines from raw coeffs data, omits comments
+// Reads lines from raw coeffs data and writes a srting into a channel, drops comments.
 func coeffsLineProvider() <-chan string {
 	ch := make(chan string)
 	coeffs_reader := strings.NewReader(igrf13coeffs)
@@ -92,6 +92,7 @@ func epoch2string(epoch float64) string {
 	return fmt.Sprintf("%.1f", epoch)
 }
 
+// Parses an array of strings into an array of floats.
 func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 	data := make([]float64, len(raw_data))
 	for index, token := range raw_data {
