@@ -41,7 +41,7 @@ const near_pole_tolerance = 0.001
 // calculated value 16.47, reference 17
 // calculated value 2.52, reference 3
 // ...
-const max_sv_error = 50 // %
+// const max_sv_error = 50 // %
 
 func TestIGRFDataCases(t *testing.T) {
 	tests := getTestData()
@@ -185,8 +185,8 @@ func getTestData() []testsData {
 	tests := make([]testsData, 0)
 	for _, file := range test_data_files {
 		f, err := os.Open(file)
-		defer f.Close()
 		check(err)
+		defer f.Close()
 		current_file_tests := produceTestsDataFromFile(f)
 		tests = append(tests, current_file_tests...)
 	}
