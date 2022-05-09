@@ -32,7 +32,7 @@ const dir_path string = "../testdata"
 const (
 	max_rel_tol           = 0.005 // max relative tolerance
 	near_pole_max_rel_tol = 0.03  // max relative tolerance is increased for near pole values
-	d_i_abs_tol           = 0.01  // D and I are tested with much higher accuracy
+	d_i_abs_tol           = 0.005 // D and I are tested with much higher accuracy
 )
 
 const near_pole_tolerance = 0.001
