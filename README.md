@@ -3,7 +3,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/proway2/go-igrf.svg)](https://pkg.go.dev/github.com/proway2/go-igrf)
 
 # go-igrf
-Pure Go IGRF (International Geomagnetic Reference Field). This is based on the existing `C` implementation.
+Pure Go IGRF (International Geomagnetic Reference Field). This is based on the existing `C` implementation. This package computes values for the geomagnetic field and secular variation for a given set of coordinates and date.
 
 ## Inputs
 
@@ -63,8 +63,9 @@ import (
 )
 
 func main() {
-	res, _ := igrf.IGRF(46.9, 39.9, 0.0, 2021.5)
-	fmt.Println(res)
+	igrf_data := igrf.New()
+	res, err := igrf_data.IGRF(46.9, 39.9, 0.0, 2021.5)
+	fmt.Println(res, err)
 }
 ```
 
