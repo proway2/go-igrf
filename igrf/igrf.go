@@ -10,6 +10,19 @@ import (
 	"github.com/proway2/go-igrf/coeffs"
 )
 
+type IGRFdata struct {
+	shc *coeffs.IGRFcoeffs
+}
+
+// New returns an initialized IGRF structure that could be used to compute .
+func New() *IGRFdata {
+	shc, err := coeffs.NewCoeffsData()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return &IGRFdata{shc: shc}
+}
+
 // IGRF computes values for the geomagnetic field and secular variation for a given set of coordinates and date
 // and returns a populated `IGRFresults` structure.
 //
@@ -19,15 +32,14 @@ import (
 // alt - geodetic altitude above mean sea level in km (-1.00 to 600.00).
 //
 // date - decimal date (1900.00 to 2025).
-func IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
+func (igd *IGRFdata) IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
+	if igd.shc == nil {
+		return IGRFresults{}, errors.New("IGRFdata structure is not initialized.")
+	}
 	if err := checkInitialConditions(lat, lon, alt); err != nil {
 		return IGRFresults{}, err
 	}
-	shc, err := coeffs.NewCoeffsData()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	start_coeffs, end_coeffs, nmax, err := shc.Coeffs(date)
+	start_coeffs, end_coeffs, nmax, err := igd.shc.Coeffs(date)
 	if err != nil {
 		return IGRFresults{}, err
 	}
