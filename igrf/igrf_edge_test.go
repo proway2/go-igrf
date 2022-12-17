@@ -61,9 +61,10 @@ func TestIGRFEdgeCases(t *testing.T) {
 		// 	wantErr: false,
 		// },
 	}
+	igrf_data := New()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := IGRF(tt.args.lat, tt.args.lon, tt.args.alt, tt.args.date)
+			got, err := igrf_data.IGRF(tt.args.lat, tt.args.lon, tt.args.alt, tt.args.date)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("IGRF() error = %v, wantErr %v", err, tt.wantErr)
 				return

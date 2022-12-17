@@ -6,10 +6,13 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/proway2/go-igrf/coeffs"
 )
 
 type args struct {
@@ -37,19 +40,41 @@ const (
 
 const near_pole_tolerance = 0.001
 
+func TestNew(t *testing.T) {
+	shc, _ := coeffs.NewCoeffsData()
+	tests := []struct {
+		name string
+		want *IGRFdata
+	}{
+		{
+			name: "Creating a IGRF data structure",
+			want: &IGRFdata{shc: shc},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := New()
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("New() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 // SV fields are just integers in FORTRAN, so there might be situations where:
 // calculated value 16.47, reference 17
 // calculated value 2.52, reference 3
 // ...
 // const max_sv_error = 50 // %
 
-func TestIGRFDataCases(t *testing.T) {
+func TestIGRFdata_IGRF(t *testing.T) {
 	tests := getTestData()
+	igrf_data := New()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := IGRF(tt.args.lat, tt.args.lon, tt.args.alt, tt.args.date)
+			got, err := igrf_data.IGRF(tt.args.lat, tt.args.lon, tt.args.alt, tt.args.date)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("IGRF() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("IGRFdata.IGRF() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			allowed_relative_error := getMaxAllowedRelativeError(tt.args.lat)
