@@ -5,16 +5,16 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        go: [ '1.18', '1.19' ]
+    name: Setup Go ${{ matrix.go }} environment
     steps:
-    - name: Setup Go environment
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.18.x
-        check-latest: true
-
-    - name: Checking out
-      uses: actions/checkout@v3
-
-    - name: Unittests
-      run: go test -v -cover ./...
+      - uses: actions/checkout@v3
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+      - name: Unittests
+        run: go test -v -cover ./...
