@@ -55,7 +55,7 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error
 	start, end := igrf.findEpochs(date)
 	var nmax int
 	coeffs_start, nmax := igrf.interpolateCoeffs(start, end, date)
-	// in order to calculate yaerly SV add 1 year to the date
+	// in order to calculate yearly SV add 1 year to the date
 	date = date + 1
 	var coeffs_end *[]float64
 	if date < max_epoch {
