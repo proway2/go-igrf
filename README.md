@@ -2,6 +2,8 @@
 [![golangci-lint](https://github.com/proway2/go-igrf/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/proway2/go-igrf/actions/workflows/golangci-lint.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/proway2/go-igrf.svg)](https://pkg.go.dev/github.com/proway2/go-igrf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/proway2/go-igrf)](https://goreportcard.com/report/github.com/proway2/go-igrf)
+[![Go Report Card](https://goreportcard.com/badge/github.com/proway2/go-igrf)](https://goreportcard.com/report/github.com/proway2/go-igrf)
+!\[igrf badge\](https://badgen.net/static/IGRF%20model/13th/green)
 
 # go-igrf
 Pure Go IGRF (International Geomagnetic Reference Field). This is based on the existing `C` implementation. This package computes values for the geomagnetic field and secular variation for a given set of coordinates and date.
