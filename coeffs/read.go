@@ -284,7 +284,7 @@ func nMaxForEpoch(epoch string) (int, error) {
 	}
 	if epoch_f < 2000.0 {
 		nmax = 10
-	} else if epoch_f > 2020.0 {
+	} else if epoch_f > 2025.0 {
 		nmax = 8
 	} else {
 		nmax = 13
