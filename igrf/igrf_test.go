@@ -222,8 +222,8 @@ func produceTestsDataFromFile(file_descr *os.File) []testsData {
 	scanner := bufio.NewScanner(file_descr)
 	split_regex := regexp.MustCompile(`\s+`)
 	var lat, lon, alt float64
-	tests := make([]testsData, 125)
-	for num, i := 0, 0; scanner.Scan(); num++ {
+	var tests []testsData
+	for num := 0; scanner.Scan(); num++ {
 		line := scanner.Text()
 		if num == 1 {
 			// this is just a column names
@@ -244,8 +244,7 @@ func produceTestsDataFromFile(file_descr *os.File) []testsData {
 			want:    igrf_res,
 			wantErr: false,
 		}
-		tests[i] = current_test
-		i++
+		tests = append(tests, current_test)
 	}
 	return tests
 }
