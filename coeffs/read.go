@@ -90,7 +90,7 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 	} else {
 		if nmax1 > nmax2 {
 			// the last column has degree of 8
-			// now it's anything after 2020.0
+			// now it's anything after 2025.0
 			k = nmax2 * (nmax2 + 2)
 			l = nmax1 * (nmax1 + 2)
 			interp = func(start, end, f float64) float64 {
