@@ -20,9 +20,9 @@ The output is of type `type IGRFresults struct`. Fields are:
 
 |Field name|Fortran name|Unit of measurement|Sample value|Notes|
 |-|-|-|-|-|
-|Declination|(D)|decimal degrees(°)|14.175 °|(degrees east)|
+|Declination|(D)|decimal degrees(°)|14.175|degrees east|
 |DeclinationSV|(D)|arcmin/yr|-8.92||
-|Inclination|(I)|decimal degrees(°)|74.229|(degrees down)
+|Inclination|(I)|decimal degrees(°)|74.229|degrees down|
 |InclinationSV|(I)|arcmin/yr|-2.59||
 |HzIntensity|Horizontal intensity (H)|nT|14626.6||
 |HorizontalSV|(H)|nT/yr|-16.8||
