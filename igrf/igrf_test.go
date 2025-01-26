@@ -92,7 +92,12 @@ func TestIGRFdata_IGRF(t *testing.T) {
 			}
 			// Horizontal intensity
 			allowed_abs_error := getMaxAllowedAbsoluteTolerance(tt.want.HorizontalIntensity)
-			compare = isClose(got.HorizontalIntensity, tt.want.HorizontalIntensity, allowed_relative_error, allowed_abs_error)
+			is_close := isClose(got.HorizontalIntensity, tt.want.HorizontalIntensity, allowed_relative_error, allowed_abs_error)
+			is_close_no_frac := noFracComparison(got.HorizontalIntensity, tt.want.HorizontalIntensity)
+			compare = is_close || is_close_no_frac
+			// For lat=-64.081, lon=135.866, alt=0, data=2021.5, horizontal intensity is 74.38, whereas reference value is 74.
+			// Fortran rounds/truncates almost all values, therefore it's hard to use either relative or absolute tolerance.
+			// noFracComparison compares a value with it's rounded/truncated value.
 			if !compare {
 				t.Errorf("IGRF() Horizontal intensity = %v, want %v", got.HorizontalIntensity, tt.want.HorizontalIntensity)
 			}
@@ -183,6 +188,17 @@ func getMaxAllowedAbsoluteTolerance(value float64) float64 {
 		return abs_tol
 	}
 	return abs_tol
+}
+
+func noFracComparison(val, ref float64) bool {
+	// Since almost all values produces by Fortran are rounded/truncated, it's sometimes needed to compare
+	// calculated value with rounded/truncated value. Rounding doesn't always work, as it's unclear whether Fortran values
+	// are actually rounded or truncated.
+	// Therefore values are truncated and compared to be within certain range.
+	min := ref - 1.0
+	max := ref + 1.0
+	val_trunc := math.Floor((val))
+	return min <= val && val_trunc <= max
 }
 
 func isClose(a, b, rel_tol, abs_tol float64) bool {
