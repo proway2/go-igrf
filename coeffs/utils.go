@@ -98,7 +98,7 @@ func parseArrayToFloat(raw_data []string) (*[]float64, error) {
 	for index, token := range raw_data {
 		real_data, err := strconv.ParseFloat(token, 32)
 		if err != nil {
-			return nil, errors.New("Unable to parse coeffs.")
+			return nil, errors.New("unable to parse coeffs")
 		}
 		if index == len(raw_data)-1 {
 			// real value calculated for the SV column

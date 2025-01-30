@@ -34,7 +34,7 @@ func New() *IGRFdata {
 // date - decimal date (1900.00 to 2025).
 func (igd *IGRFdata) IGRF(lat, lon, alt, date float64) (IGRFresults, error) {
 	if igd.shc == nil {
-		return IGRFresults{}, errors.New("IGRFdata structure is not initialized.")
+		return IGRFresults{}, errors.New("IGRFdata structure is not initialized")
 	}
 	if err := checkInitialConditions(lat, lon, alt); err != nil {
 		return IGRFresults{}, err

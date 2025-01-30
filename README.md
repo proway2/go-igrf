@@ -2,7 +2,7 @@
 [![golangci-lint](https://github.com/proway2/go-igrf/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/proway2/go-igrf/actions/workflows/golangci-lint.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/proway2/go-igrf.svg)](https://pkg.go.dev/github.com/proway2/go-igrf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/proway2/go-igrf)](https://goreportcard.com/report/github.com/proway2/go-igrf)
-[![IGRF badge](https://badgen.net/static/IGRF%20model/13th/green)](https://www.ncei.noaa.gov/products/international-geomagnetic-reference-field)
+[![IGRF badge](https://badgen.net/static/IGRF%20model/14th/green)](https://www.ncei.noaa.gov/products/international-geomagnetic-reference-field)
 
 # go-igrf
 Pure Go IGRF (International Geomagnetic Reference Field). This is based on the existing `C` implementation. This package computes values for the geomagnetic field and secular variation for a given set of coordinates and date.
@@ -20,9 +20,9 @@ The output is of type `type IGRFresults struct`. Fields are:
 
 |Field name|Fortran name|Unit of measurement|Sample value|Notes|
 |-|-|-|-|-|
-|Declination|(D)|decimal degrees(°)|14.175 °|(+ve east)|
+|Declination|(D)|decimal degrees(°)|14.175|degrees east|
 |DeclinationSV|(D)|arcmin/yr|-8.92||
-|Inclination|(I)|decimal degrees(°)|74.229|(+ve down)
+|Inclination|(I)|decimal degrees(°)|74.229|degrees down|
 |InclinationSV|(I)|arcmin/yr|-2.59||
 |HzIntensity|Horizontal intensity (H)|nT|14626.6||
 |HorizontalSV|(H)|nT/yr|-16.8||
@@ -75,6 +75,7 @@ func main() {
 
 ## References
 
+- [IAGA V-MOD WG and main IGRF website](https://www.ncei.noaa.gov/products/international-geomagnetic-reference-field)
 - [Alken, P., Thébault, E., Beggan, C.D. et al. International Geomagnetic Reference Field: the thirteenth generation. Earth Planets Space 73, 49 (2021).](https://rdcu.be/cKqZv) https://doi.org/10.1186/s40623-020-01288-x
-
+- [International Association of Geomagnetism and Aeronomy. (2024). IGRF-14. Zenodo.](https://doi.org/10.5281/zenodo.14012302)
 - Implementation is based on [geomag70.c](https://www.ngdc.noaa.gov/IAGA/vmod/geomag70_linux.tar.gz). [License information](https://www.ngdc.noaa.gov/IAGA/vmod/geomag70_license.html).

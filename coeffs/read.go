@@ -49,7 +49,7 @@ func (igrf *IGRFcoeffs) Coeffs(date float64) (*[]float64, *[]float64, int, error
 	min_epoch := (*igrf.epochs)[0]
 	max_epoch := (*igrf.epochs)[max_column-1]
 	if date < min_epoch || date > max_epoch {
-		return nil, nil, 0, fmt.Errorf("Date %v is out of range (%v, %v).", date, min_epoch, max_epoch)
+		return nil, nil, 0, fmt.Errorf("date %v is out of range (%v, %v)", date, min_epoch, max_epoch)
 	}
 	// calculate coeffs for the requested date
 	start, end := igrf.findEpochs(date)
@@ -90,7 +90,7 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 	} else {
 		if nmax1 > nmax2 {
 			// the last column has degree of 8
-			// now it's anything after 2020.0
+			// now it's anything after 2025.0
 			k = nmax2 * (nmax2 + 2)
 			l = nmax1 * (nmax1 + 2)
 			interp = func(start, end, f float64) float64 {
@@ -101,7 +101,7 @@ func (igrf *IGRFcoeffs) interpolateCoeffs(start_epoch, end_epoch string, date fl
 			// between 1995.0 and 2000.0
 			k = nmax1 * (nmax1 + 2)
 			l = nmax2 * (nmax2 + 2)
-			interp = func(start, end, f float64) float64 {
+			interp = func(_, end, f float64) float64 {
 				return f * end
 			}
 			nmax = nmax2
@@ -212,7 +212,7 @@ func getEpochs(reader <-chan string) (*[]string, *[]float64, error) {
 		names, epochs := parseHeader(line, line2)
 		return &names, &epochs, nil
 	}
-	return nil, nil, errors.New("Unable to get epochs.")
+	return nil, nil, errors.New("unable to get epochs")
 }
 
 // Parses the header of the coeffs. Usually it's the first two non-comment lines.
@@ -257,7 +257,7 @@ func (igrf *IGRFcoeffs) getCoeffsForEpochs(provider <-chan string) error {
 		line_data := space_re.Split(line, -1)
 		line_coeffs, err := parseArrayToFloat(line_data[3:])
 		if err != nil {
-			return errors.New("Unable to parse coeffs.")
+			return errors.New("unable to parse coeffs")
 		}
 		igrf.loadCoeffs(i, line_coeffs)
 		i++
@@ -284,7 +284,7 @@ func nMaxForEpoch(epoch string) (int, error) {
 	}
 	if epoch_f < 2000.0 {
 		nmax = 10
-	} else if epoch_f > 2020.0 {
+	} else if epoch_f > 2025.0 {
 		nmax = 8
 	} else {
 		nmax = 13
